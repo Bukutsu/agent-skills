@@ -325,15 +325,6 @@
       "skillFolderHash": "401af6846377c1f6bb712337f28252f003e9cd32",
       "installedAt": "2026-08-20T16:07:41.731Z",
       "updatedAt": "2026-08-20T16:07:41.731Z"
-    },
-    "flm": {
-      "source": "Bukutsu/flm-provider",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/Bukutsu/flm-provider.git",
-      "skillPath": "skills/flm/SKILL.md",
-      "skillFolderHash": "2a1f7e926401cf3a7b8106862c347360143cbf08",
-      "installedAt": "2026-08-20T16:08:39.891Z",
-      "updatedAt": "2026-08-20T16:08:39.891Z"
     }
   },
   "dismissed": {}
