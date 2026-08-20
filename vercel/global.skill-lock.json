@@ -10,16 +10,6 @@
       "installedAt": "2026-07-27T06:36:16.544Z",
       "updatedAt": "2026-07-27T06:36:16.544Z"
     },
-    "docx": {
-      "source": "anthropics/skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/anthropics/skills.git",
-      "skillPath": "skills/docx/SKILL.md",
-      "skillFolderHash": "6e6f5b95c1de6e803cc07b214f5059b074d64e0c",
-      "pluginName": "document-skills",
-      "installedAt": "2026-08-20T16:06:50.386Z",
-      "updatedAt": "2026-08-20T16:06:50.386Z"
-    },
     "exa-search": {
       "source": "exa-labs/agent-skills",
       "sourceType": "github",
