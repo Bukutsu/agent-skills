@@ -7,8 +7,8 @@ pi config is in [pi-agent-config](https://github.com/Bukutsu/pi-agent-config). T
 ## use
 
 ```bash
-git clone https://github.com/Bukutsu/agent-skills ~/Projects/agent-skills
-cp ~/Projects/agent-skills/vercel/global.skill-lock.json ~/.agents/.skill-lock.json
+git clone https://github.com/Bukutsu/agent-skills
+cp agent-skills/vercel/global.skill-lock.json ~/.agents/.skill-lock.json
 npx skills update -g -y
 ```
 
