@@ -2,43 +2,28 @@
 
 Global source of truth for agent skills — sync across `pi`, `agy` (Antigravity), `gemini-cli`, `codex`, `cursor` etc. via Vercel `skills` CLI.
 
-This repo stores **two truths** (migrating from `pi` packages to Vercel):
+`pi` settings stay in [`Bukutsu/pi-agent-config`](https://github.com/Bukutsu/pi-agent-config) (pi-sync). This repo is **only for skills**.
 
-* `pi/` — `~/.pi/agent/settings.json` + `AGENTS.md` (pi's native `packages[]` + filtered `skills`)
-* `vercel/` — `~/.agents/.skill-lock.json` (Vercel `skills` global lock, single source for all harnesses)
+## Contents
+- `vercel/global.skill-lock.json` — Vercel `skills` global lock (`~/.agents/.skill-lock.json`)
+- `skills-lock.json` — project lock (when used at repo root, optional)
 
-## Pi config (legacy, still active)
-- `pi/settings.json` — 14 packages (anthropics/skills, exa-labs, ponytail, mattpocock, etc.)
-- `pi/AGENTS.md` — global agent guidelines
+## Restore / update
 
-Restore pi on new machine:
 ```bash
-# pi-sync is disabled for skills, so copy manually or via dotfiles:
-cp pi/settings.json ~/.pi/agent/settings.json
-cp pi/AGENTS.md ~/.pi/agent/AGENTS.md
-pi update --all
-```
-
-## Vercel skills (new source of truth for skills)
-- `vercel/global.skill-lock.json` — global lock (`npx skills list -g`)
-
-Restore / update skills on any machine:
-```bash
-# global (user-level, all projects)
+git clone https://github.com/Bukutsu/agent-skills ~/Projects/agent-skills
+# restore global skills
 cp vercel/global.skill-lock.json ~/.agents/.skill-lock.json
 npx skills update -g -y
-# or re-add directly:
+
+# or add directly (writes to ~/.agents/.skill-lock.json)
 npx skills add anthropics/skills -g -a pi,antigravity,gemini-cli --skill docx
 npx skills add vercel-labs/agent-skills -g --all
+npx skills list -g --json
 
-# project (commit `skills-lock.json` at repo root)
+# project (per-repo)
 npx skills add <repo> --skill <name>   # writes ./skills-lock.json
 git add skills-lock.json && git push
 # teammate:
 npx skills experimental_install
 ```
-
-## Current pi packages migrated
-`pi/settings.json` packages will be gradually moved to `vercel` via `npx skills add -g -a pi,antigravity --all` so one `skills update -g` syncs everything.
-
-See `pi/settings.json` for the full list to migrate.
