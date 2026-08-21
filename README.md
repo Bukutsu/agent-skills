@@ -15,7 +15,7 @@ cp -r agent-skills/skills/* ~/.agents/skills/
 
 That's it. `update` puts the skills in `~/.pi/agent/skills`, `~/.agents/skills`, etc.
 
-`skills/` holds my own skills (`git-peek`, `review-loop`) as plain files. They're not in the lockfile, so the `cp -r` above is what installs them.
+`skills/` holds my own skills (`git-peek`, `audit-loop`) as plain files. They're not in the lockfile, so the `cp -r` above is what installs them.
 
 To add or remove a skill (maintainer):
 

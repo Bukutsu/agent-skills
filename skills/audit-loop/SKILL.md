@@ -1,5 +1,5 @@
 ---
-name: review-loop
+name: audit-loop
 description: >-
   Iterative multi-perspective codebase audit and fix loop. Analyzes the project,
   spawns N tailored parallel subagent reviewers across the entire repository, fixes
@@ -8,7 +8,7 @@ description: >-
   quality passes, or repo-wide cleanups.
 ---
 
-# Review Loop
+# Audit Loop
 
 Audit an entire repository through $N$ project-tailored perspectives, resolve root causes, commit verified rounds, and repeat until all reviewers report clean in the same round.
 
