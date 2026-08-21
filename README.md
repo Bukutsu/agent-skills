@@ -10,9 +10,12 @@ pi config is in [pi-agent-config](https://github.com/Bukutsu/pi-agent-config). T
 git clone https://github.com/Bukutsu/agent-skills
 cp agent-skills/vercel/global.skill-lock.json ~/.agents/.skill-lock.json
 npx skills update -g -y
+cp -r agent-skills/skills/* ~/.agents/skills/
 ```
 
 That's it. `update` puts the skills in `~/.pi/agent/skills`, `~/.agents/skills`, etc.
+
+`skills/` holds my own skills (`git-peek`, `review-loop`) as plain files. They're not in the lockfile, so the `cp -r` above is what installs them.
 
 To add or remove a skill (maintainer):
 
