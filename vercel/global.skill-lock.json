@@ -261,24 +261,6 @@
       "installedAt": "2026-08-20T16:07:24.403Z",
       "updatedAt": "2026-08-20T16:07:24.403Z"
     },
-    "humanizer": {
-      "source": "NulightJens/humanizer-stack",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/NulightJens/humanizer-stack.git",
-      "skillPath": "skills/humanizer/SKILL.md",
-      "skillFolderHash": "716cfe475a91f8a409d55cced5be5f77be5c94c9",
-      "installedAt": "2026-08-20T16:07:32.915Z",
-      "updatedAt": "2026-08-20T16:07:32.915Z"
-    },
-    "structural-humanizer": {
-      "source": "NulightJens/humanizer-stack",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/NulightJens/humanizer-stack.git",
-      "skillPath": "skills/structural-humanizer/SKILL.md",
-      "skillFolderHash": "e0563e22382bd43dce72ed08496ffab07b9e7f2a",
-      "installedAt": "2026-08-20T16:07:32.917Z",
-      "updatedAt": "2026-08-20T16:07:32.917Z"
-    },
     "video-processor": {
       "source": "iamzhihuix/happy-claude-skills",
       "sourceType": "github",
@@ -325,6 +307,15 @@
       "pluginName": "document-skills",
       "installedAt": "2026-08-20T18:13:41.291Z",
       "updatedAt": "2026-08-20T18:14:41.492Z"
+    },
+    "unslop": {
+      "source": "cursor/plugins",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/cursor/plugins.git",
+      "skillPath": "pstack/skills/unslop/SKILL.md",
+      "skillFolderHash": "6161508c5c7959b156ff0e4e10b510863b51f9cc",
+      "installedAt": "2026-08-21T13:46:08.786Z",
+      "updatedAt": "2026-08-21T13:46:08.786Z"
     }
   },
   "dismissed": {
