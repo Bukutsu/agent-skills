@@ -3,14 +3,14 @@ name: audit-loop
 description: >-
   Iterative multi-perspective codebase audit and fix loop. Analyzes the project,
   spawns N tailored parallel subagent reviewers across the entire repository, fixes
-  findings at the root cause, commits each verified round, and loops until all
+  findings at the root cause, commits each fix on its own, and loops until all
   reviewers report clean in a single round. Use for whole-codebase audits, deep
   quality passes, or repo-wide cleanups.
 ---
 
 # Audit Loop
 
-Audit an entire repository through $N$ project-tailored perspectives, resolve root causes, commit verified rounds, and repeat until all reviewers report clean in the same round.
+Audit an entire repository through $N$ project-tailored perspectives, resolve root causes, land each fix as its own ordinary commit, and repeat until all reviewers report clean in the same round.
 
 ## Workflow
 
@@ -26,11 +26,11 @@ Each subagent prompt must enforce a structured return format:
 - **If issues found:** `[CRITICAL | IMPORTANT | MINOR] file:line - description -> recommended fix`
 - **If clean:** exactly `VERDICT: CLEAN`
 
-### 3. Fix & Commit Round
+### 3. Fix & Commit
 - Collate all findings across reviewers and sort by severity (`CRITICAL` first).
 - Fix root causes directly; avoid adding wrapper layers or cosmetic workarounds.
 - Verify fixes: compile, type-check, lint, and run the test suite.
-- **Commit verified progress:** Commit the round's fixes with a message stating the problems solved (e.g. `fix(audit): resolve null session teardown and remove single-use config factory (round 1)`).
+- **One commit per fix:** split unrelated fixes into separate commits so history reads like normal development. Write the message about the code change itself, as a person would when refactoring (e.g. `fix: tear down sessions before closing the pool`, `refactor: extract single-use config factory`).
 
 ### 4. Re-Audit & Exit
 - Re-dispatch all $N$ reviewers against the updated codebase.
