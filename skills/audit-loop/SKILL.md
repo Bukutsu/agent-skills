@@ -10,29 +10,31 @@ description: >-
 
 # Audit Loop
 
-Audit an entire repository through $N$ project-tailored perspectives, resolve root causes, land each fix as its own ordinary commit, and repeat until all reviewers report clean in the same round.
+Audit an entire repository through $N$ project-tailored perspectives, resolve root causes, land each fix as its own ordinary commit, and repeat until all reviewers report clean in the same round. Every fix stays inside the code's existing intent: callers see the same behavior they saw before.
 
 ## Workflow
 
 ### 1. Orientation & Perspective Selection
 - Inspect the codebase layout, domain, dependencies, and test suite to establish a green baseline.
-- Choose $N$ independent review perspectives tailored to this project's stack and architecture (e.g. API contracts, data invariants, concurrency safety, simplicity/bloat, performance, security).
-- Ensure chosen perspectives have distinct, non-overlapping audit boundaries.
+- Read the repo's own rules first (`AGENTS.md`, `CLAUDE.md`, contributing docs). Reviewers audit against those rules plus general correctness, so findings speak the project's language.
+- Choose $N$ independent perspectives with distinct, non-overlapping boundaries, tailored to this stack. Strong defaults drawn from universal engineering practice: contract breaks (callers, APIs, error paths), data shape (invariants, state ownership), explicit control (hidden magic, swallowed errors, deep nesting), and resource lifecycle (who owns and releases what).
 
 ### 2. Dispatch Reviewers
 Spawn $N$ parallel subagents (or run sequentially if subagents are unavailable). Each reviewer receives whole-repo scope and audits strictly within their assigned perspective.
 
 Each subagent prompt must enforce a structured return format:
-- **If issues found:** `[CRITICAL | IMPORTANT | MINOR] file:line - description -> recommended fix`
-- **If clean:** exactly `VERDICT: CLEAN`
+- **Defects against existing intent:** `[CRITICAL | IMPORTANT | MINOR] file:line - description -> recommended fix`. Severity: `CRITICAL` breaks a contract or produces wrong output; `IMPORTANT` is a latent bug or risk; `MINOR` is cleanup.
+- **Ideas that would change how the code works** (public interfaces, observable behavior, product scope): `DECISION: description`. These belong to the user; reviewers report them instead of recommending fixes.
+- **No defects:** exactly `VERDICT: CLEAN`
 
 ### 3. Fix & Commit
-- Collate all findings across reviewers and sort by severity (`CRITICAL` first).
-- Fix root causes directly; avoid adding wrapper layers or cosmetic workarounds.
-- Verify fixes: compile, type-check, lint, and run the test suite.
-- **One commit per fix:** split unrelated fixes into separate commits so history reads like normal development. Write the message about the code change itself, as a person would when refactoring (e.g. `fix: tear down sessions before closing the pool`, `refactor: extract single-use config factory`).
+- Collate all findings across reviewers and sort by severity (`CRITICAL` first). Park `DECISION` items for the user; they leave the fix queue.
+- Fix root causes in the shared path rather than patching the reported symptom. Keep diffs surgical: every changed line traces to a finding.
+- Each fix preserves observable behavior: same inputs, same outputs, same caller expectations. When priorities conflict, order them correctness, then performance, then simplicity, then style.
+- Verify before landing: compile, type-check, lint, test suite. A failing fix gets reworked before it lands.
+- **One commit per fix:** split unrelated fixes into separate commits so history reads like normal development. The message names the change and why it was needed, as a person would when refactoring (e.g. `fix: tear down sessions before closing the pool`).
 
 ### 4. Re-Audit & Exit
 - Re-dispatch all $N$ reviewers against the updated codebase.
 - **Exit criterion:** Complete the loop only when **all $N$ reviewers return `VERDICT: CLEAN` in the same round** with all tests passing.
-- If goal tracking is active, mark complete only after the clean round is verified with evidence.
+- Summarize the loop: rounds run, fixes landed, validation evidence, and open `DECISION` items awaiting the user.
