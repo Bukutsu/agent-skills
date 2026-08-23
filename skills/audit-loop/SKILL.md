@@ -16,8 +16,7 @@ Audit an entire repository through $N$ project-tailored perspectives, resolve ro
 
 ### 1. Orientation & Perspective Selection
 - Inspect the codebase layout, domain, dependencies, and test suite to establish a green baseline.
-- Read the repo's own rules first (`AGENTS.md`, `CLAUDE.md`, contributing docs). Reviewers audit against those rules plus general correctness, so findings speak the project's language.
-- Choose $N$ independent perspectives with distinct, non-overlapping boundaries, tailored to this stack. Strong defaults drawn from universal engineering practice: contract breaks (callers, APIs, error paths), data shape (invariants, state ownership), explicit control (hidden magic, swallowed errors, deep nesting), and resource lifecycle (who owns and releases what).
+- Choose $N$ independent perspectives with distinct, non-overlapping boundaries, tailored to this stack and the project's stated rules. Strong defaults drawn from universal engineering practice: contract breaks (callers, APIs, error paths), data shape (invariants, state ownership), explicit control (hidden magic, swallowed errors, deep nesting), and resource lifecycle (who owns and releases what).
 
 ### 2. Dispatch Reviewers
 Spawn $N$ parallel subagents (or run sequentially if subagents are unavailable). Each reviewer receives whole-repo scope and audits strictly within their assigned perspective.
