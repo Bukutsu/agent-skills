@@ -1,8 +1,8 @@
 ---
 name: git-peek
 description: >-
-  Inspect external Git repositories by shallow-cloning to a persistent cache.
-  Use when exploring remote codebases (GitHub, GitLab, or owner/repo slugs),
+  Inspect external Git repositories (owner/repo, GitHub/GitLab URLs) by shallow-cloning to a persistent cache.
+  Use when the user says owner/repo, pastes a GitHub/GitLab URL, exploring remote codebases,
   investigating library internals, or checking third-party implementations.
   Not for local workspace files.
 ---

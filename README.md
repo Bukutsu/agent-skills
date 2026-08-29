@@ -20,7 +20,7 @@ npx skills add mattpocock/skills -g --skill code-review --skill codebase-design 
 npx skills add mgranberry/mermaid-diagram-skill -g --skill mermaid-diagram -y
 npx skills add vercel-labs/agent-browser -g --skill agent-browser -y
 npx skills add vercel-labs/agent-skills -g --skill web-design-guidelines -y
-npx skills add https://monid.ai/SKILL.md -g -y
+npx skills add tinyfish-io/tinyfish-cookbook -g --skill use-tinyfish -y
 
 # local skills (not in any registry)
 cp -r skills/* ~/.agents/skills/
