@@ -36,4 +36,5 @@ Each subagent prompt must enforce a structured return format:
 ### 4. Re-Audit & Exit
 - Re-dispatch all $N$ reviewers against the updated codebase.
 - **Exit criterion:** Complete the loop only when **all $N$ reviewers return `VERDICT: CLEAN` in the same round** with all tests passing.
-- Summarize the loop: rounds run, fixes landed, validation evidence, and open `DECISION` items awaiting the user.
+- Final summary (bro rules): restate the outcome in plain human language. Stop using jargon and speak coherently. State it more simply and concisely, like one human talking to another. Cover: rounds run, fixes landed, validation evidence, open `DECISION` items.
+- Biggest fix you can try right now: end with one highest-leverage next step the user can do immediately, with the exact file or command to try.

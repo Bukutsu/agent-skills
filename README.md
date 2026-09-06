@@ -13,7 +13,7 @@ cd agent-skills
 # one clone per source
 npx skills add anthropics/skills -g --skill docx --skill pdf --skill pptx --skill xlsx -y
 npx skills add blader/humanizer -g --skill humanizer -y
-npx skills add cursor/plugins -g --skill how --skill typescript-best-practices --skill unslop --skill why -y
+npx skills add cursor/plugins -g --skill bro --skill how --skill typescript-best-practices --skill unslop --skill why -y
 npx skills add exa-labs/agent-skills -g --skill build-with-exa --skill exa-contents --skill exa-search -y
 npx skills add iamzhihuix/happy-claude-skills -g --skill video-processor -y
 npx skills add mattpocock/skills -g --skill code-review --skill codebase-design --skill diagnosing-bugs --skill domain-modeling --skill grilling --skill handoff --skill prototype --skill research --skill resolving-merge-conflicts --skill tdd --skill wait-what --skill wizard --skill writing-for-agents -y
@@ -26,7 +26,7 @@ npx skills add tinyfish-io/tinyfish-cookbook -g --skill use-tinyfish -y
 cp -r skills/* ~/.agents/skills/
 ```
 
-Verify: `npx skills ls -g` → 32 skills (30 from above + 2 local).
+Verify: `npx skills ls -g` → 33 skills (31 from above + 2 local).
 
 `skills/` holds my own skills (`git-peek`, `audit-loop`) as plain files.
 
