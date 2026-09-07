@@ -1,92 +1,77 @@
 ---
 name: perf-loop
 description: >-
-  Autonomous performance, efficiency, and resource optimization loop. Accepts an
-  optional target subsystem or audits the whole project to rank hotspots.
-  Establishes an empirical baseline, profiles the critical path, tests
-  falsifiable hypotheses, preserves correctness, commits verified wins, and
-  repeats until stopped.
+  Optimize performance, latency, throughput, memory, or resource efficiency
+  across a target subsystem or the whole project in an autonomous loop. Use
+  when asked to "optimize", "speed up", "profile", "reduce memory", or tune bottlenecks.
 argument-hint: "[target area / module / flow] (optional: omit to scan entire project)"
 ---
 
 # Perf Loop
 
-Autonomous performance, efficiency, and resource optimization loop. Operates on any tech stack without stack-specific assumptions. Optimizes empirical bottlenecks, guarantees behavioral correctness, commits measurable gains, and loops until the user stops it.
+Autonomous performance, efficiency, and resource optimization loop. Operates on any stack without stack-specific assumptions. Optimizes measured bottlenecks, guarantees correctness, lands verified wins, and loops until the user stops it.
 
-## Core Rules
+## Optimization Hierarchy
 
-1. **Correctness is the Hard Gate**: An optimization that breaks a test, contract, or invariant is not an optimization—it is broken code. The test suite must pass before profiling and immediately after every mutation. Zero semantic regression.
-2. **Measurement Before Mutation**: Never touch code based on static assumptions or intuition. Only optimize what is measured on the critical path (Amdahl's Law).
-3. **Falsifiable Hypotheses**: Every change must state a predicted metric delta and the mechanism causing it before editing.
-4. **Statistical Rigor**: Run benchmarks with warmups. Use medians over $N$ runs (minimum 3–5 runs) to reject environment noise. Clear a minimum hurdle rate (e.g., $\ge 5\%$).
-5. **Atomic Commit & Instant Rollback**: One change per cycle. If tests fail or the benchmark delta is below the hurdle rate, rollback immediately via git. If the win is verified, commit it cleanly.
-6. **Complexity Budget**: Readability and simplicity are resources. Never trade clarity for marginal gains. Prefer clean data structures and eliminating redundant work over convoluted caching or premature concurrency.
-
-## Optimization Hierarchy (Order of Leverage)
-
-When addressing an identified bottleneck, evaluate interventions in this strict order:
-1. **Eliminate work**: Remove redundant computations, dead iterations, duplicate queries, unnecessary allocations.
-2. **Reuse work**: Cache, memoize, or index expensive repeated calculations or lookups.
-3. **Batch work**: Combine frequent small I/O operations, allocations, or round-trips into bulk operations.
-4. **Defer work**: Lazy-load, evaluate on-demand, or push non-blocking work out of the critical path.
-5. **Simplify representation**: Use tighter, simpler data structures. Algorithms follow data.
+When addressing an identified hotspot, evaluate interventions in order of leverage:
+1. **Eliminate work**: remove redundant computations, dead iterations, duplicate queries, and unnecessary allocations.
+2. **Reuse work**: cache, memoize, or index expensive repeated calculations and lookups.
+3. **Batch work**: combine frequent small operations, allocations, or I/O into bulk operations.
+4. **Defer work**: lazy-load, evaluate on demand, or move non-blocking work out of the critical path.
+5. **Simplify representation**: use simpler, contiguous, or more compact data structures. Algorithms follow data.
 
 ## Workflow
 
 ### 1. Scope & Target Selection
-- **User-specified target**: If an argument or focus area was provided (e.g., a specific module, endpoint, pipeline, or file), restrict the optimization scope strictly to that subsystem.
-- **Whole-project audit (default when unspecified)**:
-  - Survey the repository's main data flows, heavy loops, I/O boundaries, serialization paths, and existing benchmarks/test fixtures.
-  - Rank candidates by estimated leverage: $\text{frequency of invocation} \times \text{resource cost}$.
-  - Select the #1 highest-leverage candidate as the active target for the first round. Maintain the ranked backlog for subsequent rounds.
+- **Targeted mode** (argument provided): restrict all measurement and edits strictly to the specified module, route, or flow.
+- **Whole-project mode** (argument omitted):
+  - Survey repository data flows, hot loops, I/O boundaries, and serialization paths.
+  - Rank candidates by leverage: `frequency of invocation * resource cost`.
+  - Select candidate #1 as the active target; preserve the ranked backlog for subsequent rounds.
 
 ### 2. Baseline & Harness
-- Identify the project's existing test suite and verify that all tests pass cleanly. A green test suite is required before touching any code.
-- Locate an existing benchmark or construct a minimal, deterministic benchmark harness exercising the active target.
-- Run the benchmark across multiple iterations with warmup to establish a stable baseline (measure latency, throughput, memory, or allocations). Record the median and variance.
+- Run the project test suite. **All tests must pass before proceeding.**
+- Identify or construct a deterministic, automated benchmark harness exercising the active target.
+- Run the benchmark across multiple iterations with warmup. Record the baseline median and variance.
+- **Completion criterion**: A single runnable command producing deterministic timing/resource numbers against a green test suite.
 
 ### 3. Locate the Critical Path
-- Instrument or profile the target workload using the platform's native or standard tools to identify where resources are actually spent.
-- Target only the single largest bottleneck (>50–80% of execution time, memory allocations, or I/O). Ignore non-critical paths.
+- Instrument or profile the target workload using platform-native tools to measure where time, memory, or I/O is spent.
+- Isolate the primary bottleneck (the single site accounting for the majority of resource consumption). Focus exclusively on this critical path.
+- **Completion criterion**: A named function, query, loop, or allocation site with its measured budget share.
 
 ### 4. Hypothesize & Mutate
-- State a single, falsifiable hypothesis:
-  - Bottleneck identified: `<file:function or data flow>`
-  - Planned intervention: `<exact change, following the Optimization Hierarchy>`
-  - Expected effect: `<predicted metric delta and why>`
-- Apply the surgical change. Touch only what is required for this hypothesis.
+- Formulate one falsifiable hypothesis before editing:
+  - Target: `<file:line or symbol>`
+  - Action: `<specific change, following the Optimization Hierarchy>`
+  - Prediction: `<expected metric delta and causal explanation>`
+- Apply surgical edits: change only what is required to test the hypothesis. Preserve code readability; reject changes that add disproportionate complexity.
 
 ### 5. Verify & Measure
-- **Gate 1 (Correctness)**: Run the full test suite. If any test fails or behavior changes, rollback immediately (`git restore .`) and record the failure.
-- **Gate 2 (Benchmark)**: Run the benchmark harness using the exact same parameters and runs as the baseline.
-- Calculate the delta against baseline median:
-  - If improvement is below the hurdle rate ($\Delta < 5\%$ or within noise): rollback immediately (`git restore .`).
-  - If improvement meets or exceeds the hurdle rate ($\Delta \ge 5\%$): keep the change.
+- **Gate 1 (Correctness)**: Run the full test suite. If any test fails or observable behavior changes, rollback immediately (`git restore .`) and record the failure.
+- **Gate 2 (Benchmark)**: Run the benchmark harness using the baseline configuration and warmup.
+- Compare against baseline median:
+  - **Hurdle not met** (`delta < 5%` or within noise): rollback immediately (`git restore .`).
+  - **Hurdle met** (`delta >= 5%` win): keep the change.
 
-### 6. Commit & Log
-- Commit the win as an ordinary commit with the measured improvement in the commit message (e.g., `perf(core): eliminate redundant allocations in parser (-14% latency)`).
-- Update the baseline with the new measurement.
+### 6. Commit & Update Baseline
+- Commit the win as an atomic commit naming the change and the verified delta (e.g. `perf(parser): eliminate redundant AST clones (-18% latency)`).
+- Update the baseline measurement with the new post-optimization median.
 
 ### 7. Repeat Until Stopped
-- Report a concise cycle summary:
-  - Round number & active target
-  - Bottleneck addressed
-  - Measured delta (before vs after)
-  - Status (Committed / Rolled back)
+- Report cycle status: round number, active target, bottleneck addressed, measured delta, and outcome (committed or rolled back).
 - **Next cycle selection**:
-  - If working on a **user-specified target**: continue profiling that target for the next critical path until diminishing returns (<5% potential remaining), then proceed to **Step 8**.
-  - If working on **whole-project mode**: once the active target yields diminishing returns, promote the next highest-leverage target from the audit backlog and repeat from **Step 2**. If all high-leverage targets are exhausted, proceed to **Step 8**.
-- Continue cycling until the user explicitly stops the agent, or all targets are exhausted.
+  - In **targeted mode**: continue profiling the active target for the next bottleneck until diminishing returns (`< 5%` remaining potential), then proceed to Step 8.
+  - In **whole-project mode**: when the active target yields diminishing returns, promote the next candidate from the backlog and return to Step 2. If all candidates are exhausted, proceed to Step 8.
+- Continue cycling until the user interrupts or no bottlenecks remain above the hurdle rate.
 
 ### 8. Final Summary (Before/After Table & Bro Rules)
-When the loop ends or the user stops it, deliver the final summary:
+When the loop exits, deliver the final summary:
 
 1. **Before / After Table**:
    | Subsystem / Target | Bottleneck & Fix | Metric | Before | After | Net Delta |
    | :--- | :--- | :--- | :--- | :--- | :--- |
-   | e.g. `parser/ast.py` | Removed duplicate deep clones | Allocations / Latency | 12.4 MB / 48ms | 4.1 MB / 29ms | -67% mem, -40% time |
 
 2. **Bro Skill Explanation**:
-   - Restate the outcome in plain human language.
-   - Stop using jargon and speak coherently. State it simply and concisely, like one human talking to another.
-   - Plainly explain: what was dragging the system down, what was done to fix it, and what that actually feels like in real use (e.g. "We stopped reloading the file on every single click, so the whole thing feels instant now").
+   - Restate the outcome in plain human language with zero jargon.
+   - Speak simply and concisely, like one human talking to another: explain what was slow, what was changed, and what that means in actual practice.
