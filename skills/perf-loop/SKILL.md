@@ -1,11 +1,12 @@
 ---
 name: perf-loop
 description: >-
-  Autonomous performance, efficiency, and resource optimization loop.
+  Autonomous performance, efficiency, and resource optimization loop. Accepts an
+  optional target subsystem or audits the whole project to rank hotspots.
   Establishes an empirical baseline, profiles the critical path, tests
-  falsifiable optimization hypotheses, preserves correctness, commits verified
-  wins, and repeats until stopped. Use when optimizing runtime latency, memory,
-  throughput, or resource efficiency.
+  falsifiable hypotheses, preserves correctness, commits verified wins, and
+  repeats until stopped.
+argument-hint: "[target area / module / flow] (optional: omit to scan entire project)"
 ---
 
 # Perf Loop
@@ -32,38 +33,47 @@ When addressing an identified bottleneck, evaluate interventions in this strict 
 
 ## Workflow
 
-### 1. Baseline & Harness
+### 1. Scope & Target Selection
+- **User-specified target**: If an argument or focus area was provided (e.g., a specific module, endpoint, pipeline, or file), restrict the optimization scope strictly to that subsystem.
+- **Whole-project audit (default when unspecified)**:
+  - Survey the repository's main data flows, heavy loops, I/O boundaries, serialization paths, and existing benchmarks/test fixtures.
+  - Rank candidates by estimated leverage: $\text{frequency of invocation} \times \text{resource cost}$.
+  - Select the #1 highest-leverage candidate as the active target for the first round. Maintain the ranked backlog for subsequent rounds.
+
+### 2. Baseline & Harness
 - Identify the project's existing test suite and verify that all tests pass cleanly. A green test suite is required before touching any code.
-- Locate an existing benchmark or construct a minimal, deterministic benchmark harness (e.g., a script or command that exercises the target workload).
+- Locate an existing benchmark or construct a minimal, deterministic benchmark harness exercising the active target.
 - Run the benchmark across multiple iterations with warmup to establish a stable baseline (measure latency, throughput, memory, or allocations). Record the median and variance.
 
-### 2. Locate the Critical Path
+### 3. Locate the Critical Path
 - Instrument or profile the target workload using the platform's native or standard tools to identify where resources are actually spent.
 - Target only the single largest bottleneck (>50–80% of execution time, memory allocations, or I/O). Ignore non-critical paths.
 
-### 3. Hypothesize & Mutate
+### 4. Hypothesize & Mutate
 - State a single, falsifiable hypothesis:
   - Bottleneck identified: `<file:function or data flow>`
   - Planned intervention: `<exact change, following the Optimization Hierarchy>`
   - Expected effect: `<predicted metric delta and why>`
 - Apply the surgical change. Touch only what is required for this hypothesis.
 
-### 4. Verify & Measure
+### 5. Verify & Measure
 - **Gate 1 (Correctness)**: Run the full test suite. If any test fails or behavior changes, rollback immediately (`git restore .`) and record the failure.
 - **Gate 2 (Benchmark)**: Run the benchmark harness using the exact same parameters and runs as the baseline.
 - Calculate the delta against baseline median:
   - If improvement is below the hurdle rate ($\Delta < 5\%$ or within noise): rollback immediately (`git restore .`).
   - If improvement meets or exceeds the hurdle rate ($\Delta \ge 5\%$): keep the change.
 
-### 5. Commit & Log
+### 6. Commit & Log
 - Commit the win as an ordinary commit with the measured improvement in the commit message (e.g., `perf(core): eliminate redundant allocations in parser (-14% latency)`).
 - Update the baseline with the new measurement.
 
-### 6. Repeat Until Stopped
+### 7. Repeat Until Stopped
 - Report a concise cycle summary:
-  - Round number
-  - Target bottleneck
+  - Round number & active target
+  - Bottleneck addressed
   - Measured delta (before vs after)
   - Status (Committed / Rolled back)
-- Loop back to **Step 2** to find the next critical path.
-- Continue cycling until the user explicitly stops the agent, or no remaining bottlenecks can clear the hurdle rate.
+- **Next cycle selection**:
+  - If working on a **user-specified target**: continue profiling that target for the next critical path until diminishing returns (<5% potential remaining), then report completion.
+  - If working on **whole-project mode**: once the active target yields diminishing returns, promote the next highest-leverage target from the audit backlog and repeat from **Step 2**.
+- Continue cycling until the user explicitly stops the agent, or all identified areas are exhausted.
