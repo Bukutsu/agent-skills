@@ -47,7 +47,9 @@ Before forming hypotheses, inspect `.perf-ledger.tsv` to prevent repeating previ
 
 ### 2. Baseline & Harness
 - Run the project test suite. **All tests must pass before proceeding.**
-- Identify or construct a deterministic, automated benchmark harness exercising the active target.
+- **Instrumentation permission**: If existing tools or benchmarks lack fine-grained resolution, the agent is explicitly authorized to inject minimal, low-overhead profiling probes (e.g., monotonic timers, memory delta checkpoints, counters) directly into the code or create a dedicated benchmark script.
+  - **Probe rules**: Keep probes zero-cost or ultra-light (e.g., monotonic clock diffs); avoid I/O, string formatting, or heavy allocations inside the measured path. Tag all in-tree probes with `[PERF-PROBE]`.
+  - **Commit probes before mutating**: Commit the harness and probes to the branch first (`perf(harness): add minimal profiling probes`) so subsequent `git restore .` calls roll back only optimization mutations without wiping the measurement infrastructure.
 - **Protect context window**: Never let raw benchmark output flood stdout. Redirect output to `.perf-run.log`:
   ```bash
   <benchmark-command> > .perf-run.log 2>&1
@@ -88,13 +90,14 @@ Before forming hypotheses, inspect `.perf-ledger.tsv` to prevent repeating previ
   - In **whole-project mode**: promote the next candidate from the backlog and return to Step 2. If all backlog candidates are exhausted, proceed to Step 8.
 - **Autonomous continuation**: Once running, do not pause to ask if you should continue. Run autonomously until interrupted by the user or all targets are exhausted.
 
-### 8. Final Summary (Before/After Table & Bro Rules)
-When the loop exits, deliver the final summary:
+### 8. Final Summary & Cleanup
+When the loop exits:
 
-1. **Before / After Table**:
+1. **Clean temporary probes**: Remove all temporary `[PERF-PROBE]` lines from production code (preserving permanent benchmark harnesses if desirable). Run the test suite to verify clean production code.
+2. **Before / After Table**:
    | Subsystem / Target | Bottleneck & Fix | Metric | Before | After | Net Delta |
    | :--- | :--- | :--- | :--- | :--- | :--- |
 
-2. **Bro Skill Explanation**:
+3. **Bro Skill Explanation**:
    - Restate the outcome in plain human language with zero jargon.
    - Speak simply and concisely, like one human talking to another: explain what was slow, what was changed, and what that means in actual practice.
