@@ -74,6 +74,19 @@ When addressing an identified bottleneck, evaluate interventions in this strict 
   - Measured delta (before vs after)
   - Status (Committed / Rolled back)
 - **Next cycle selection**:
-  - If working on a **user-specified target**: continue profiling that target for the next critical path until diminishing returns (<5% potential remaining), then report completion.
-  - If working on **whole-project mode**: once the active target yields diminishing returns, promote the next highest-leverage target from the audit backlog and repeat from **Step 2**.
-- Continue cycling until the user explicitly stops the agent, or all identified areas are exhausted.
+  - If working on a **user-specified target**: continue profiling that target for the next critical path until diminishing returns (<5% potential remaining), then proceed to **Step 8**.
+  - If working on **whole-project mode**: once the active target yields diminishing returns, promote the next highest-leverage target from the audit backlog and repeat from **Step 2**. If all high-leverage targets are exhausted, proceed to **Step 8**.
+- Continue cycling until the user explicitly stops the agent, or all targets are exhausted.
+
+### 8. Final Summary (Before/After Table & Bro Rules)
+When the loop ends or the user stops it, deliver the final summary:
+
+1. **Before / After Table**:
+   | Subsystem / Target | Bottleneck & Fix | Metric | Before | After | Net Delta |
+   | :--- | :--- | :--- | :--- | :--- | :--- |
+   | e.g. `parser/ast.py` | Removed duplicate deep clones | Allocations / Latency | 12.4 MB / 48ms | 4.1 MB / 29ms | -67% mem, -40% time |
+
+2. **Bro Skill Explanation**:
+   - Restate the outcome in plain human language.
+   - Stop using jargon and speak coherently. State it simply and concisely, like one human talking to another.
+   - Plainly explain: what was dragging the system down, what was done to fix it, and what that actually feels like in real use (e.g. "We stopped reloading the file on every single click, so the whole thing feels instant now").
