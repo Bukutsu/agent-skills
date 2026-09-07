@@ -20,50 +20,73 @@ When addressing an identified hotspot, evaluate interventions in order of levera
 4. **Defer work**: lazy-load, evaluate on demand, or move non-blocking work out of the critical path.
 5. **Simplify representation**: use simpler, contiguous, or more compact data structures. Algorithms follow data.
 
+## Persistent Ledger (`.perf-ledger.tsv`)
+
+Keep an untracked TSV file `.perf-ledger.tsv` in the repository root throughout the run. Because it is untracked by git, **it survives `git restore` and `git reset`**, preserving persistent experiment memory across rollbacks.
+
+Format (tab-separated):
+```
+run_id	commit	metric_before	metric_after	delta	status	description
+```
+Statuses:
+- `keep`: Verified improvement meeting the hurdle rate.
+- `keep-simple`: Neutral performance delta (`-1% <= delta < 5%`) that simplifies code or eliminates dead abstractions.
+- `discard`: Did not clear the hurdle rate or regressed performance.
+- `crash`: Execution failed, timed out, or broke test invariants.
+
+Before forming hypotheses, inspect `.perf-ledger.tsv` to prevent repeating previously discarded ideas or dead-ends.
+
 ## Workflow
 
-### 1. Scope & Target Selection
-- **Targeted mode** (argument provided): restrict all measurement and edits strictly to the specified module, route, or flow.
-- **Whole-project mode** (argument omitted):
-  - Survey repository data flows, hot loops, I/O boundaries, and serialization paths.
-  - Rank candidates by leverage: `frequency of invocation * resource cost`.
-  - Select candidate #1 as the active target; preserve the ranked backlog for subsequent rounds.
+### 1. Scope & Branch Setup
+- **Branch isolation**: Cut a dedicated working branch from the clean base (e.g. `git checkout -b perf/<target-or-date>`).
+- **Target selection**:
+  - **Targeted mode** (argument provided): restrict all profiling, harnesses, and edits strictly to the specified module, route, or flow.
+  - **Whole-project mode** (argument omitted): survey data flows, hot loops, serialization paths, and I/O boundaries. Rank candidates by leverage: `frequency of invocation * resource cost`. Select candidate #1 as the active target; preserve the ranked backlog.
+- Initialize `.perf-ledger.tsv` with the header row if not present.
 
 ### 2. Baseline & Harness
 - Run the project test suite. **All tests must pass before proceeding.**
 - Identify or construct a deterministic, automated benchmark harness exercising the active target.
-- Run the benchmark across multiple iterations with warmup. Record the baseline median and variance.
-- **Completion criterion**: A single runnable command producing deterministic timing/resource numbers against a green test suite.
+- **Protect context window**: Never let raw benchmark output flood stdout. Redirect output to `.perf-run.log`:
+  ```bash
+  <benchmark-command> > .perf-run.log 2>&1
+  ```
+  Extract target metrics via `grep`. On failures, inspect only `tail -n 40 .perf-run.log`.
+- Run multiple iterations with warmup. Record the baseline median and execution time budget.
+- **Completion criterion**: A runnable command producing deterministic metrics against a green test suite, logged as run `0` (`baseline`) in `.perf-ledger.tsv`.
 
 ### 3. Locate the Critical Path
-- Instrument or profile the target workload using platform-native tools to measure where time, memory, or I/O is spent.
-- Isolate the primary bottleneck (the single site accounting for the majority of resource consumption). Focus exclusively on this critical path.
+- Profile the active workload using platform-native tools to identify where time, memory, or I/O is spent.
+- Isolate the primary bottleneck (the single site accounting for the majority of resource consumption).
 - **Completion criterion**: A named function, query, loop, or allocation site with its measured budget share.
 
 ### 4. Hypothesize & Mutate
+- Check `.perf-ledger.tsv` to ensure the planned idea has not already been attempted.
 - Formulate one falsifiable hypothesis before editing:
   - Target: `<file:line or symbol>`
   - Action: `<specific change, following the Optimization Hierarchy>`
   - Prediction: `<expected metric delta and causal explanation>`
-- Apply surgical edits: change only what is required to test the hypothesis. Preserve code readability; reject changes that add disproportionate complexity.
+- Apply surgical edits: change only what is required to test the hypothesis.
 
 ### 5. Verify & Measure
-- **Gate 1 (Correctness)**: Run the full test suite. If any test fails or observable behavior changes, rollback immediately (`git restore .`) and record the failure.
-- **Gate 2 (Benchmark)**: Run the benchmark harness using the baseline configuration and warmup.
+- **Gate 1 (Correctness)**: Run the test suite. If any test fails, log `crash` in `.perf-ledger.tsv`, rollback immediately (`git restore .`), and proceed to the next hypothesis.
+- **Gate 2 (Benchmark with Timeout)**: Run the benchmark harness redirecting to `.perf-run.log`. Enforce a hard timeout at $2\times$ baseline runtime. If the run hangs or exceeds timeout: terminate, log `crash (timeout)` in `.perf-ledger.tsv`, and rollback (`git restore .`).
 - Compare against baseline median:
-  - **Hurdle not met** (`delta < 5%` or within noise): rollback immediately (`git restore .`).
-  - **Hurdle met** (`delta >= 5%` win): keep the change.
+  - **Hurdle met** (`delta >= 5%` win): Mark `keep`.
+  - **Simplification win** (neutral delta `-1% <= delta < 5%` with measurably reduced lines/complexity): Mark `keep-simple`.
+  - **Hurdle not met** (`delta < 5%` without simplification): Log `discard` in `.perf-ledger.tsv`, rollback (`git restore .`).
 
-### 6. Commit & Update Baseline
-- Commit the win as an atomic commit naming the change and the verified delta (e.g. `perf(parser): eliminate redundant AST clones (-18% latency)`).
-- Update the baseline measurement with the new post-optimization median.
+### 6. Commit & Advance Baseline
+- For `keep` and `keep-simple` runs: commit the atomic change naming the win (e.g. `perf(parser): eliminate redundant AST clones (-18% latency)`).
+- Update the active baseline median with the new post-optimization metric.
+- Log the completed run in `.perf-ledger.tsv`.
 
-### 7. Repeat Until Stopped
-- Report cycle status: round number, active target, bottleneck addressed, measured delta, and outcome (committed or rolled back).
-- **Next cycle selection**:
-  - In **targeted mode**: continue profiling the active target for the next bottleneck until diminishing returns (`< 5%` remaining potential), then proceed to Step 8.
-  - In **whole-project mode**: when the active target yields diminishing returns, promote the next candidate from the backlog and return to Step 2. If all candidates are exhausted, proceed to Step 8.
-- Continue cycling until the user interrupts or no bottlenecks remain above the hurdle rate.
+### 7. Plateau Pivot & Loop
+- **Plateau pivot (3-strike rule)**: If 3 consecutive attempts on the active target result in `discard` or `crash`, declare the target saturated.
+  - In **targeted mode**: proceed to Step 8.
+  - In **whole-project mode**: promote the next candidate from the backlog and return to Step 2. If all backlog candidates are exhausted, proceed to Step 8.
+- **Autonomous continuation**: Once running, do not pause to ask if you should continue. Run autonomously until interrupted by the user or all targets are exhausted.
 
 ### 8. Final Summary (Before/After Table & Bro Rules)
 When the loop exits, deliver the final summary:
