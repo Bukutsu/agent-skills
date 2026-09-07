@@ -25,9 +25,9 @@ npx skills add tinyfish-io/tinyfish-cookbook -g --skill use-tinyfish -y
 cp -r skills/* ~/.agents/skills/
 ```
 
-Verify: `npx skills ls -g` → 32 skills (30 from above + 2 local).
+Verify: `npx skills ls -g` → 33 skills (30 from above + 3 local).
 
-`skills/` holds my own skills (`git-peek`, `audit-loop`) as plain files.
+`skills/` holds my own skills (`git-peek`, `audit-loop`, `perf-loop`) as plain files.
 
 To add or remove a skill (maintainer):
 
