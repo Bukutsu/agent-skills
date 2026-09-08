@@ -1,40 +1,55 @@
 ---
 name: audit-loop
 description: >-
-  Iterative multi-perspective codebase audit and fix loop. Analyzes the project,
-  spawns N tailored parallel subagent reviewers across the entire repository, fixes
-  findings at the root cause, commits each fix on its own, and loops until all
-  reviewers report clean in a single round. Use for whole-codebase audits, deep
-  quality passes, or repo-wide cleanups.
+  Autonomous iterative codebase audit and fix loop. Tailors N perspectives, resolves
+  root causes with atomic commits, and loops until all perspectives report clean in
+  one round. Trigger for repo-wide quality sweeps or deep multi-angle audits.
 ---
 
 # Audit Loop
 
-Audit an entire repository through $N$ project-tailored perspectives, resolve root causes, land each fix as its own ordinary commit, and repeat until all reviewers report clean in the same round. Every fix stays inside the code's existing intent: callers see the same behavior they saw before.
+Audit an entire repository through $N$ project-tailored perspectives, resolve root causes, land each fix as its own ordinary commit, and repeat until all perspectives report clean in the same round. Runs autonomously without pausing for confirmation between rounds. Every fix stays inside existing intent: callers see the same behavior as before.
 
 ## Workflow
 
 ### 1. Orientation & Perspective Selection
-- Inspect the codebase layout, domain, dependencies, and test suite to establish a green baseline.
-- Choose $N$ independent perspectives with distinct, non-overlapping boundaries, tailored to this stack and the project's stated rules. Strong defaults drawn from universal engineering practice: contract breaks (callers, APIs, error paths), data shape (invariants, state ownership), explicit control (hidden magic, swallowed errors, deep nesting), and resource lifecycle (who owns and releases what).
+- Inspect layout, domain, dependencies, and test suite. Run tests to establish a green baseline.
+- Select $N$ independent perspectives with non-overlapping boundaries from the reference list below.
+- **Completion criterion:** Test suite green and $N$ named perspectives with defined audit scopes selected.
 
-### 2. Dispatch Reviewers
-Spawn $N$ parallel subagents (or run sequentially if subagents are unavailable). Each reviewer receives whole-repo scope and audits strictly within their assigned perspective.
-
-Each subagent prompt must enforce a structured return format:
-- **Defects against existing intent:** `[CRITICAL | IMPORTANT | MINOR] file:line - description -> recommended fix`. Severity: `CRITICAL` breaks a contract or produces wrong output; `IMPORTANT` is a latent bug or risk; `MINOR` is cleanup.
-- **Ideas that would change how the code works** (public interfaces, observable behavior, product scope): `DECISION: description`. These belong to the user; reviewers report them instead of recommending fixes.
-- **No defects:** exactly `VERDICT: CLEAN`
+### 2. Review Codebase
+Audit the repository across all $N$ selected perspectives:
+- **Subagent tools available:** Spawn $N$ parallel subagents concurrently (`subagent`, `task`), each reviewing whole-repo scope strictly within its perspective.
+- **No subagent tools:** Review the repository directly in-session across each perspective in sequence. Keep whole-repo scope for each.
+- Enforce the structured finding format from the reference section below.
+- **Completion criterion:** All $N$ perspectives evaluated and findings collated.
 
 ### 3. Fix & Commit
-- Collate all findings across reviewers and sort by severity (`CRITICAL` first). Park `DECISION` items for the user; they leave the fix queue.
-- Fix root causes in the shared path rather than patching the reported symptom. Keep diffs surgical: every changed line traces to a finding.
-- Each fix preserves observable behavior: same inputs, same outputs, same caller expectations. When priorities conflict, order them correctness, then performance, then simplicity, then style.
-- Verify before landing: compile, type-check, lint, test suite. A failing fix gets reworked before it lands.
-- **One commit per fix:** split unrelated fixes into separate commits so history reads like normal development. The message names the change and why it was needed, as a person would when refactoring (e.g. `fix: tear down sessions before closing the pool`).
+- Order fix queue by severity (`CRITICAL` first). Park `DECISION` items for user review.
+- Fix root causes in the shared path. Keep diffs surgical: every line traces to a finding. Preserve observable behavior.
+- Validate each fix: compile, type-check, lint, and test suite.
+- Commit each verified fix individually with an explanatory message (`fix: <cause and remedy>`).
+- **Completion criterion:** Fix queue drained, working tree clean, and all tests passing.
 
 ### 4. Re-Audit & Exit
-- Re-dispatch all $N$ reviewers against the updated codebase.
-- **Exit criterion:** Complete the loop only when **all $N$ reviewers return `VERDICT: CLEAN` in the same round** with all tests passing.
-- Final summary (bro rules): restate the outcome in plain human language. Stop using jargon and speak coherently. State it more simply and concisely, like one human talking to another. Cover: rounds run, fixes landed, validation evidence, open `DECISION` items.
-- Biggest fix you can try right now: end with one highest-leverage next step the user can do immediately, with the exact file or command to try.
+- Re-audit all $N$ perspectives against the updated codebase using the same mechanism as Step 2.
+- **Exit criterion:** All $N$ perspectives return `VERDICT: CLEAN` in the same round with passing tests.
+- **Summary**: Plain conversational English, zero jargon. State rounds run, fixes landed, test evidence, and open `DECISION` items. End with the single highest-leverage command or fix the user can run next.
+
+---
+
+## Reference
+
+### Finding Schema
+- `[CRITICAL | IMPORTANT | MINOR] file:line - description -> recommended fix`
+  - `CRITICAL`: breaks a contract or produces wrong output.
+  - `IMPORTANT`: latent bug, concurrency risk, or resource leak.
+  - `MINOR`: cleanliness, debt, or clarity.
+- `DECISION: description`: behavior or API changes beyond existing intent (reserved for human choice).
+- `VERDICT: CLEAN`: perspective contains zero defects.
+
+### Baseline Perspectives
+- **Contract breaks**: callers, APIs, return types, error paths.
+- **Data shape**: invariants, state ownership, schema validation.
+- **Explicit control**: swallowed errors, hidden side effects, unhandled edge cases.
+- **Resource lifecycle**: acquisition, teardown, handles, connection limits.
