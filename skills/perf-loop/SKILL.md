@@ -2,87 +2,72 @@
 name: perf-loop
 description: >-
   Autonomous performance and resource optimization loop. Use when asked to
-  "optimize", "speed up", "profile", "reduce memory", or tune bottlenecks across
-  a target or the whole project.
+  optimize speed, profile bottlenecks, or reduce memory usage across a target or
+  the entire project.
 argument-hint: "[target area / module / flow] (optional: omit to scan entire project)"
 ---
 
 # Perf Loop
 
-Autonomous performance, efficiency, and resource optimization loop. Operates on any stack without stack-specific assumptions. Optimizes empirical bottlenecks, guarantees correctness, lands verified wins, and loops until stopped.
+## Execution rule
 
-## Workflow
+Run the cycle autonomously and preserve correct behavior. After every attempt, immediately take the next action shown by the cycle. The next user-facing response after setup begins is either a setup blocker or the final report. Treat a saved improvement, failed attempt, baseline, and completed part as intermediate states.
 
-### 1. Scope & Branch Setup
-- **Branch isolation**: Cut a dedicated working branch from clean base (e.g. `git checkout -b perf/<target-or-date>`).
-- **Target selection**:
-  - **Targeted mode** (argument provided): restrict all profiling, harnesses, and edits strictly to the specified module, route, or flow.
-  - **Whole-project mode** (argument omitted): survey data flows, hot loops, serialization paths, and I/O boundaries. Rank candidates by leverage: `frequency of invocation * resource cost`. Select candidate #1 as active target; preserve the backlog.
-- **Initialize ledger**: Create untracked `.perf-ledger.tsv` with header:
-  `run_id\tcommit\tmetric_before\tmetric_after\tdelta\tstatus\tdescription`
-- **Completion criterion**: Dedicated git branch active, active target selected, and `.perf-ledger.tsv` initialized.
+## Setup
 
-### 2. Baseline & Harness
-- Run the test suite. **All tests must pass before proceeding.**
-- **Inject minimal probes**: If existing tools lack resolution, add low-overhead probes (monotonic timers, memory deltas, counters) directly into the code or create a dedicated benchmark script.
-  - Keep probes zero-cost: raw clock/counter diffs only; avoid I/O or formatting on the measured path. Tag all in-tree probes with `[PERF-PROBE]`.
-  - **Commit probes before mutating**: Commit the harness and probes first (`perf(harness): add minimal profiling probes`) so subsequent rollbacks keep the measurement infrastructure intact.
-- **Protect context window**: Never print raw benchmark runs to stdout. Redirect to `.perf-run.log`:
-  `<benchmark-command> > .perf-run.log 2>&1`
-  Extract target metrics via `grep`. On failures, inspect only `tail -n 40 .perf-run.log`.
-- Run multiple iterations with warmup. Record baseline median and budget.
-- **Completion criterion**: A runnable command producing deterministic metrics against passing tests, recorded as run `0` (`baseline`) in `.perf-ledger.tsv`.
+1. Create a dedicated branch from a clean base.
+2. Check that the required build, test, and measurement tools are available. If one is missing, ask the user to install it or approve installation.
+3. Run the tests. If they fail before any changes, record the failing tests and ask the user whether to repair them or use those failures as the known baseline.
+4. Choose the discovery path:
+   - **Target specified:** Treat the named module, route, or flow as the scope boundary. Trace every stage of its runtime path through calls, data changes, and resource use. Follow costly calls into deeper layers until each cost belongs to a concrete operation, then divide the target into measurable parts.
+   - **No target specified:** Map every discovered entry point and major component, the calls and data flows between them, and their computation, memory, storage, and network use. Derive measurable parts from the map. Account for every discovered entry point and major component before ranking.
+5. Rank the parts by measured cost when measurements exist; otherwise rank by estimated `frequency * cost`. Select the highest-cost part.
+6. Create a unique untracked run directory at `.perf/<run-id>/`. Create its `ledger.tsv` with this header:
+   `attempt\tpart\tidea\tcommit\tmetric_before\tmetric_after\tdelta\tstatus\tevidence`
+   Keep every part from this run in that ledger. Write benchmark output to a separate `<part>.log` file in the same directory.
+7. Add the smallest reliable benchmark or `[PERF-PROBE]` measurements needed. Commit this measurement setup separately.
+8. Run the benchmark several times with warmup and record the median as the selected part's baseline.
 
-### 3. Locate Critical Path
-- Profile the active workload using platform-native tools to identify where time, memory, or I/O is spent.
-- Isolate the primary bottleneck (the single site accounting for majority consumption).
-- **Completion criterion**: A named function, query, loop, or allocation site with its measured budget share.
+**Setup is complete when:** the test baseline is known; every stage in the specified target or every discovered entry point and major component in the codebase is accounted for; each candidate maps to a measurable part; the parts are ranked; and a repeatable benchmark has recorded the highest-cost part's baseline median in this run's ledger.
 
-### 4. Hypothesize & Mutate
-- Consult `.perf-ledger.tsv` to avoid repeating discarded attempts or dead-ends.
-- Formulate one falsifiable hypothesis before editing:
-  - Target: `<file:line or symbol>`
-  - Action: `<specific change, following the Optimization Hierarchy>`
-  - Prediction: `<expected metric delta and causal mechanism>`
-- Apply surgical edits: touch only what tests the hypothesis.
-- **Completion criterion**: A stated hypothesis and a single atomic uncommitted diff.
+## Cycle
 
-### 5. Verify & Measure
-- **Gate 1 (Correctness)**: Run the test suite. If any test fails, log `crash` in `.perf-ledger.tsv`, rollback immediately (`git restore .`), and proceed to next hypothesis.
-- **Gate 2 (Benchmark with Timeout)**: Run benchmark redirected to `.perf-run.log`. Enforce hard timeout at $2\times$ baseline runtime. If run hangs: terminate, log `crash (timeout)` in `.perf-ledger.tsv`, and rollback (`git restore .`).
-- Compare against baseline median:
-  - **Hurdle met** (`delta >= 5%` win): Mark `keep`.
-  - **Simplification win** (neutral delta `-1% <= delta < 5%` with measurably reduced complexity/lines): Mark `keep-simple`.
-  - **Hurdle not met** (`delta < 5%` without simplification): Log `discard` in `.perf-ledger.tsv`, rollback (`git restore .`).
+For the selected part:
 
-### 6. Commit & Advance Baseline
-- For `keep` and `keep-simple`: commit the atomic win naming the change and delta (e.g. `perf(parser): eliminate redundant AST clones (-18% latency)`).
-- Update active baseline median with the new post-optimization metric.
-- Log the run in `.perf-ledger.tsv`.
+1. **Find** — Measure the selected part, follow its costly call or data path into deeper layers, and stop at the concrete function, query, loop, allocation, conversion, or I/O operation responsible for the largest measured share.
+2. **Try** — Make one small change based on one untried item from the Optimization Order.
+3. **Check** — Run the tests and benchmark with a timeout of twice the baseline runtime. Write output to this part's log; inspect only extracted metrics or its last 40 lines.
+4. **Decide**:
+   - Tests match the test baseline and performance improves by at least 5%: record `keep`, commit the change, update the performance baseline, and reset failures to zero.
+   - Tests match the test baseline, performance stays within 1%, and the measured path has fewer branches, allocations, queries, calls, or lines: record `keep-simple`, include that evidence in the ledger, commit the change, update the baseline, and reset failures to zero.
+   - Otherwise: record `discard` or `crash`, restore the attempted change, and increase this part's consecutive failure count.
+5. **Loop immediately**:
+   - After a kept change: find the new most expensive operation and try the Optimization Order again.
+   - After fewer than three consecutive failures: try the next untried item from the Optimization Order.
+   - After all applicable items have been tried against the current baseline, or after three consecutive failures: mark this part finished and select the next part.
+   - After finishing a part: use the collected measurements to re-rank the remaining parts, then select the highest-cost part.
+   - After selecting a part: run its benchmark several times, record its baseline median, and return to **Find**.
+   - When no parts remain: proceed to Finish.
 
-### 7. Plateau Pivot & Loop
-- **Plateau pivot (3-strike rule)**: If 3 consecutive attempts on the active target result in `discard` or `crash`, declare target saturated.
-  - In **targeted mode**: proceed to Step 8.
-  - In **whole-project mode**: promote the next candidate from the backlog and return to Step 2. If backlog is exhausted, proceed to Step 8.
-- **Autonomous continuation**: Run continuously without pausing to ask permission until interrupted by user or all targets are exhausted.
+**The cycle is complete only when every listed part is marked finished in the ledger.**
 
-### 8. Final Summary & Cleanup
-When the loop exits:
-1. **Clean probes**: Remove temporary `[PERF-PROBE]` lines from production code (preserve standalone benchmark harnesses). Verify tests pass.
-2. **Before / After Table**:
-   | Subsystem / Target | Bottleneck & Fix | Metric | Before | After | Net Delta |
-   | :--- | :--- | :--- | :--- | :--- | :--- |
-3. **Bro Skill Explanation**:
-   - Restate the outcome in plain human language with zero jargon.
-   - Explain what was slow, what was changed, and what that means in actual practice.
+## Finish
 
----
+Run the tests once more and report:
 
-## Reference: Optimization Hierarchy
+| Part | What changed | Metric | Before | After | Difference |
+| :--- | :--- | :--- | :--- | :--- | :--- |
 
-When addressing an identified hotspot, evaluate interventions in order of leverage:
-1. **Eliminate work**: remove redundant computations, dead iterations, duplicate queries, and unnecessary allocations.
-2. **Reuse work**: cache, memoize, or index expensive repeated calculations and lookups.
-3. **Batch work**: combine frequent small operations, allocations, or I/O into bulk operations.
-4. **Defer work**: lazy-load, evaluate on demand, or move non-blocking work out of the critical path.
-5. **Simplify representation**: use simpler, contiguous, or more compact data structures. Algorithms follow data.
+Explain plainly what improved and which parts ran out of useful ideas. Ask whether to keep or remove the benchmark and `[PERF-PROBE]` code.
+
+**Finish is complete when:** the final test result and every part appear in the report, the working tree contains only intentional retained files, and the user has been asked about measurement-code retention.
+
+## Optimization Order
+
+Try each applicable item once against the current baseline, skipping attempts already recorded for the selected part and baseline:
+
+1. Remove unnecessary work.
+2. Reuse repeated work.
+3. Combine many small operations.
+4. Delay work until needed.
+5. Use simpler data.
