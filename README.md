@@ -25,7 +25,7 @@ cp -r skills/* ~/.agents/skills/
 
 Verify: `npx skills ls -g` → 19 skills (15 from above + 4 local).
 
-`skills/` holds my own skills (`audit-loop`, `git-peek`, `humanizer`, `perf-loop`) as plain files.
+`skills/` holds my own skills (`audit-loop`, `git-peek`, `imprint`, `perf-loop`) as plain files.
 
 To add or remove a skill (maintainer):
 
