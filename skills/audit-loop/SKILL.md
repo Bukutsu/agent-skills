@@ -12,8 +12,12 @@ Audit an entire repository through $N$ project-tailored perspectives, resolve ro
 
 ## Workflow
 
+- **Execution invariant**: Run continuously and autonomously across all rounds. Do not pause to report intermediate progress; complete the loop only when the exit criterion is met.
+
 ### 1. Orientation & Perspective Selection
-- Inspect layout, domain, dependencies, and test suite. Run tests to establish a green baseline.
+- Inspect layout, domain, dependencies, and test suite.
+- **Toolchain readiness**: If any required toolchain or test runner is missing: ask the user to install it or request confirmation to let the agent set it up.
+- Run tests to establish a green baseline.
 - Select $N$ independent perspectives with non-overlapping boundaries from the reference list below.
 - **Completion criterion:** Test suite green and $N$ named perspectives with defined audit scopes selected.
 
