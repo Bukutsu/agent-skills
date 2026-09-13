@@ -27,7 +27,7 @@ Use the active harness first. A single secondary harness may support it when its
 
 ## Check freshness
 
-Load `profile.md` once per conversation. Compare session filenames or creation timestamps against each harness watermark without reading file bodies. Exclude the active session when identifiable because its messages are already in context.
+Load `profile.md` once per active context. Reuse it until compaction removes it from context. Compare session filenames or creation timestamps against each harness watermark without reading file bodies. Exclude the active session when identifiable because its messages are already in context.
 
 Choose one branch:
 
