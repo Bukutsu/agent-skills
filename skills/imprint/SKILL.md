@@ -2,7 +2,7 @@
 name: imprint
 description: |
   Apply the user's observable voice whenever producing human-facing text, including documentation, UI copy, messages, reports, office documents, commit messages, and PR text.
-  Use automatically as part of any task whose output people will read; preserve the request's meaning, facts, and constraints.
+  Use automatically as part of any task whose output people will read. If already loaded in conversation context, do not reload; write directly.
 license: MIT
 ---
 
@@ -28,13 +28,26 @@ Preserve claims, facts, names, numbers, dates, quotes, citations, rankings, and 
 
 **Complete when:** operation, destination, and any write authorization are clear.
 
-### 2. Load the voice profile
+### 2. Apply the cached voice profile
 
-Load `${XDG_STATE_HOME:-$HOME/.local/state}/imprint/profile.md` once per active context. Check its refresh metadata without reading session bodies. Read [`PROFILE.md`](PROFILE.md) when the profile is missing, contradicted, behind newer completed sessions, built with a changed selector, missing the active canonical harness identifier, or older than 90 days without a freshness check. Otherwise use the cached profile unchanged.
+Use the active voice profile below directly without reading external files:
 
-The current request and explicit corrections outrank the profile for this task. Apply one-off corrections in-session; persist a correction to `profile.md` only when the user states it as a general rule or lasting preference. Match only registers supported by evidence; conversational fragments do not define documentation voice.
+- Start with the requested action or fact; skip greetings and setup.
+- Prefer short sentences and compact sections.
+- Use plain, concrete words over formal wording.
+- Keep instructions direct, usually as commands in conversation.
+- Use sentence-case headings and standard structure in project docs (genre fallback).
+- Use first person when stating intent or preference.
+- Allow casual contractions and light fragments in conversation only; use complete grammatical sentences for documentation.
+- Keep filenames, commands, paths, and tool names exact.
+- Mention practical constraints beside the action they affect.
+- End after the useful result; do not add a generic closing.
 
-**Complete when:** a valid profile is available in working context, its freshness has been checked, and the requested register is supported or marked as a genre-based fallback.
+Read [`PROFILE.md`](PROFILE.md) only when explicitly asked to rebuild or refresh the voice profile, or when the profile is uninitialized. Also check `PROFILE.md` if the cached profile has not had a freshness check in over 90 days.
+
+The current request and explicit corrections outrank the profile for this task. Apply one-off corrections in-session; persist a correction to `profile.md` and `SKILL.md` only when the user states it as a general rule or lasting preference.
+
+**Complete when:** the active profile is in working context and the requested register is supported or marked as a genre fallback.
 
 ### 3. Set the voice guard
 

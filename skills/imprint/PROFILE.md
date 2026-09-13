@@ -61,6 +61,8 @@ Write `profile.md` atomically with:
 - unresolved conflicts;
 - each canonical harness identifier, evidence count, and newest processed watermark.
 
+Also update the active voice profile section in `SKILL.md` so future runs use the cached profile in a single tool call without reading `profile.md`.
+
 Merge durable patterns, replace contradicted patterns, and keep the 12-bullet limit. If no usable history exists, use a supplied sample, local project prose, or target context without caching that content.
 
 Profile maintenance is complete when a valid cached profile is loaded and freshness checked, or a bounded build or refresh is written atomically. Every canonical session root is counted once, and every style rule names a supported register or is marked general.
