@@ -1,6 +1,6 @@
 # Imprint review reference
 
-Use this reference only in rewrite or review mode. Scan the whole text once, then apply the rules below. Preserve the user's demonstrated habits even when they match a listed pattern.
+Consult this reference whenever drafting, rewriting, or reviewing human-facing prose. Scan the whole text once, then apply the rules below. Preserve the user's demonstrated habits even when they match a listed pattern.
 
 ## Decision rule
 
@@ -45,6 +45,12 @@ Start with the point. Keep an ordinary conversational word when the voice profil
 **Watch for:** “I’m not saying,” “To be clear,” “Don’t get me wrong,” “Some might say,” “You might think,” and hypothetical alternatives no reader needs.
 
 Remove the defense and state its useful claim. Keep a real objection or option when the text attributes and answers it.
+
+### Em dash and connector overuse
+
+**Watch for:** em dashes (`—`), en dashes (`–`), or spaced double hyphens (` -- `) used as connectors in prose, headings, or list items.
+
+Never use em dashes or en dashes in generated prose, review findings, or replies. They are immediate AI tells. Replace them with periods, colons, commas, parentheses, or plain hyphens (`-`). Leave code, commands, paths, and URLs unchanged.
 
 ### AI vocabulary clusters
 
@@ -98,9 +104,17 @@ Three parallel items or examples appear because three sounds complete. Keep thre
 
 Several sentences start with the same subject or construction. Vary or merge them when the repetition is accidental; keep deliberate anaphora.
 
-### Dash as universal connector
+### Mid-sentence colon overuse
 
-Em dashes, en dashes, or spaced double hyphens repeatedly replace clearer punctuation. Match the voice profile's rate. Leave code, commands, paths, and URLs unchanged.
+Colons before lists or examples are fine. Avoid using colons as mid-sentence connectors to frame comparisons or announce explanations (e.g., “If you are doing X: instead of Y, you do Z”). Let the point stand on its own in plain prose.
+
+### False ranges
+
+“From X to Y” where X and Y are not on a meaningful scale or continuum. List topics directly instead of staging them as an artificial spectrum.
+
+### Inline-header label restatements
+
+A bold label followed by a colon that merely restates the line (e.g., “**Performance:** Performance has improved...”). Convert those to direct prose. A bold lead-in that names the subject and is followed by genuinely new detail is fine.
 
 ### Stacked qualification
 
@@ -148,7 +162,9 @@ Words such as substrate, wedge, vector, locus, nexus, scaffolding, paradigm, nor
 
 ### Feeling instead of behavior
 
-Phrases such as “feels seamless” describe an impression without observable behavior. State what the reader can do, what the system does, or a measured result. Cut a sentence that could describe any product unchanged.
+Phrases such as “feels seamless” describe an impression without observable behavior. State what the reader can do, what the system does, or a measured result.
+
+Apply the neutrality test: if a sentence could appear unchanged in another project's docs, it says nothing about this one. Cut it.
 
 ### Dense sentence
 

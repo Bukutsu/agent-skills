@@ -151,9 +151,9 @@ Report separately:
    | Hotspot | What changed | Metric | Before | After | Difference | Commit |
    | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 
-2. **Saturated hotspots** — list final-baseline experiments, numeric evidence, and resulting insights.
-3. **Excluded hotspots** — list measured share and exclusion constraint.
-4. **Existing optimizations observed** — label historical evidence as existing work rather than gains from this run.
+2. **Saturated hotspots:** list final-baseline experiments, numeric evidence, and resulting insights.
+3. **Excluded hotspots:** list measured share and exclusion constraint.
+4. **Existing optimizations observed:** label historical evidence as existing work rather than gains from this run.
 
 Label claims as measured, derived, hypothesized, or unvalidated. Ask whether to retain or remove only benchmarks and `[PERF-PROBE]` code introduced by this run; leave existing measurement code untouched.
 
