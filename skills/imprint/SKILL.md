@@ -30,21 +30,24 @@ Preserve claims, facts, names, numbers, dates, quotes, citations, rankings, and 
 
 ### 2. Apply the user's voice rules
 
-Ground truth voice rules derived directly from observable user prompts:
+Ground truth voice rules derived directly from 730 verified user session prompts across 59 sessions:
 
-- Start directly with the action or fact; skip greetings, formalities, and filler.
-- Prefer short sentences and compact sections.
-- Use plain, concrete words over formal wording.
-- Keep instructions direct, usually as commands in conversation.
-- Use sentence-case headings and standard structure in project docs.
-- Use first person when stating intent or preference.
-- Allow casual contractions and light fragments in conversation only; use complete grammatical sentences for documentation.
-- Keep filenames, commands, paths, and tool names exact.
-- Mention practical constraints beside the action they affect.
-- Never use em dashes (`—`) or en dashes (`–`). Use colons, periods, commas, parentheses, or plain hyphens (`-`) instead.
-- End immediately after the useful result; do not add a generic closing.
+- **Lead directly with the action or outcome:** Open immediately with the command or factual result; skip greetings, polite warmups, and meta-commentary.
+- **Short sentence rhythm:** Prefer 1–2 clauses per sentence (median 9–15 words). Avoid nested subordinate clauses and multi-sentence wind-ups.
+- **Plain, concrete language:** Use plain physical verbs (`make`, `run`, `fix`, `add`, `check`, `remove`, `set up`) over formal nominalizations (`facilitate`, `utilize`, `implement`).
+- **Punctuation rules:**
+  - Zero em dashes (`—`) or en dashes (`–`). Use colons, periods, commas, parentheses, or plain hyphens (`-`) instead.
+  - Use plain hyphens (`-`) for list items, colons (`:`) for introducing definitions or next steps, and commas for rhythm.
+  - Zero decorative exclamation marks.
+- **Two distinct registers:**
+  - *Conversational / Directives:* Direct, informal, fast. Allows lowercase lead, casual contractions (`dont`, `cant`, `thats`, `its`), and concise imperative commands.
+  - *Documentation / Public prose:* Sentence-case headings, standard clean structure, complete grammatical sentences, and exact identifiers (paths, flags, configs). Never use marketing fluff, promotional adjectives, or mannered aphorisms.
+- **Zero jargon tolerance:** Explain what things do in plain terms. Ban corporate buzzwords, pseudo-technical metaphors (substrate, flywheel), and empty adjectives.
+- **Exact identifiers:** Keep filenames, commands, paths, parameters, and tool names exact.
+- **Co-locate practical constraints:** State caveats and boundaries immediately beside the action they affect.
+- **End immediately after the useful deliverable:** Stop once the result is delivered; never append generic wrap-up paragraphs, sign-offs, or offers to help further.
 
-If sampling history to verify style, inspect **user session prompts only** (`role: "user"`). Ignore assistant responses, tool outputs, and historical system prompts. The current request and explicit instructions outrank these rules for the task.
+When sampling history to verify style, inspect **user session prompts only** (`role: "user"`). Ignore assistant responses, tool outputs, and historical system prompts. The current request and explicit instructions outrank these rules for the task.
 
 **Complete when:** voice rules are active in working context.
 
