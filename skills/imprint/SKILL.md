@@ -1,8 +1,8 @@
 ---
 name: imprint
 description: |
-  Use this skill whenever writing, rewriting, or editing any README, documentation, UI text, message, commit message, PR description, or report.
-  Trigger on any request to draft or rewrite human-facing prose (e.g., 'rewrite readme', 'update docs', 'write message'). Load this skill before editing or writing the text. If already loaded in conversation context, do not reload; write directly.
+  Write, rewrite, and humanize prose in the user's observable voice.
+  Use when drafting, editing, or rewriting READMEs, docs, UI copy, commit messages, PR text, or messages.
 license: MIT
 ---
 
