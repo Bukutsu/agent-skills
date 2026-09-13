@@ -1,8 +1,8 @@
 ---
 name: imprint
 description: |
-  Write, rewrite, and humanize prose in the user's observable voice.
-  Use when drafting, editing, or rewriting READMEs, docs, UI copy, commit messages, PR text, or messages.
+  Write, rewrite, and humanize human-facing prose in the user's observable voice.
+  Use when drafting, editing, or rewriting READMEs, docs, office documents, UI copy, commit messages, PRs, or messages.
 license: MIT
 ---
 
