@@ -1,8 +1,8 @@
 ---
 name: imprint
 description: |
-  Write, rewrite, or polish human-facing text in the user's voice, including READMEs, docs, messages, UI copy, commit messages, and PRs.
-  Use automatically whenever drafting, editing, or rewriting text people will read. If already loaded in conversation context, do not reload; write directly.
+  Use this skill whenever writing, rewriting, or editing any README, documentation, UI text, message, commit message, PR description, or report.
+  Trigger on any request to draft or rewrite human-facing prose (e.g., 'rewrite readme', 'update docs', 'write message'). Load this skill before editing or writing the text. If already loaded in conversation context, do not reload; write directly.
 license: MIT
 ---
 
