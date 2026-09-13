@@ -12,7 +12,6 @@ cd agent-skills
 
 # one clone per source
 npx skills add anthropics/skills -g --skill docx --skill pdf --skill pptx --skill xlsx -y
-npx skills add blader/humanizer -g --skill humanizer -y
 npx skills add cursor/plugins -g --skill bro --skill how --skill typescript-best-practices --skill unslop --skill why -y
 npx skills add mattpocock/skills -g --skill handoff --skill writing-for-agents -y
 npx skills add mgranberry/mermaid-diagram-skill -g --skill mermaid-diagram -y
@@ -24,9 +23,9 @@ npx skills add tinyfish-io/tinyfish-cookbook -g --skill use-tinyfish -y
 cp -r skills/* ~/.agents/skills/
 ```
 
-Verify: `npx skills ls -g` → 19 skills (16 from above + 3 local).
+Verify: `npx skills ls -g` → 19 skills (15 from above + 4 local).
 
-`skills/` holds my own skills (`git-peek`, `audit-loop`, `perf-loop`) as plain files.
+`skills/` holds my own skills (`audit-loop`, `git-peek`, `humanizer`, `perf-loop`) as plain files.
 
 To add or remove a skill (maintainer):
 
