@@ -1,39 +1,37 @@
 # agent-skills
 
-My personal archive of small agent skills for pi, agy, Gemini, and Codex.
+One install list for every agent. pi, agy, gemini, codex all use the same skills.
 
-`skills-lock.json` records the third-party and local skills in this repo.
+pi config is in [pi-agent-config](https://github.com/Bukutsu/pi-agent-config). This repo is only skills.
 
-## Fresh install
+## use
 
 ```bash
 git clone https://github.com/Bukutsu/agent-skills
 cd agent-skills
-npx skills experimental_install
+
+# one clone per source
+npx skills add anthropics/skills -g --skill docx --skill pdf --skill pptx --skill xlsx -y
+npx skills add cursor/plugins -g --skill bro --skill how --skill typescript-best-practices --skill unslop --skill why -y
+npx skills add mattpocock/skills -g --skill handoff --skill writing-for-agents -y
+npx skills add mgranberry/mermaid-diagram-skill -g --skill mermaid-diagram -y
+npx skills add Tencent/BrowserSkill -g --skill browser-skill -y
+npx skills add vercel-labs/agent-skills -g --skill web-design-guidelines -y
+npx skills add tinyfish-io/tinyfish-cookbook -g --skill use-tinyfish -y
+
+# local skills (not in any registry)
+cp -r skills/* ~/.agents/skills/
 ```
 
-This restores all skills into the project `.agents/skills/` directory. That directory is ignored by git.
+Verify: `npx skills ls -g` → 19 skills (15 from above + 4 local).
 
-## Add a third-party skill
+`skills/` holds my own skills (`audit-loop`, `git-peek`, `imprint`, `perf-loop`) as plain files.
+
+To add or remove a skill (maintainer):
 
 ```bash
-npx skills add owner/repo --skill skill-name -y
+npx skills add anthropics/skills -g --skill docx -y
+npx skills remove docx -g -y
+# then update the list above in README.md
+git commit -am "update skills" && git push
 ```
-
-Commit the changed `skills-lock.json`.
-
-## Add a local skill
-
-Create `skills/my-skill/SKILL.md`, then add it to the lock file:
-
-```bash
-npx skills add ./skills --skill my-skill -y
-```
-
-## Update third-party skills
-
-```bash
-npx skills update -p
-```
-
-Commit the changed `skills-lock.json`.
