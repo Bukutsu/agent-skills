@@ -1,8 +1,8 @@
 ---
 name: imprint
 description: |
-  Apply the user's observable voice whenever producing human-facing text, including documentation, UI copy, messages, reports, office documents, commit messages, and PR text.
-  Use automatically as part of any task whose output people will read. If already loaded in conversation context, do not reload; write directly.
+  Write, rewrite, or polish human-facing text in the user's voice, including READMEs, docs, messages, UI copy, commit messages, and PRs.
+  Use automatically whenever drafting, editing, or rewriting text people will read. If already loaded in conversation context, do not reload; write directly.
 license: MIT
 ---
 
