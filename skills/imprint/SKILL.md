@@ -20,17 +20,19 @@ Use these steps in order. The task is complete only when the completion conditio
 
 ### 1. Establish the human-facing output
 
-Identify the prose people will read inside the surrounding task. Use **compose mode** for documentation, UI copy, messages, reports, office documents, release text, and similar new output. Use **rewrite mode** when the user explicitly invokes Imprint or asks to rewrite supplied text. Use **review mode** only when requested. Treat a filename as context, not permission to edit; write a file only after the user explicitly asks for that change.
+Identify the human-facing prose inside the surrounding task.
+- **Operation:** choose **compose** for new documentation, UI copy, messages, reports, or release notes; **rewrite** when the user explicitly invokes Imprint or provides text to rewrite; or **review** when asked to audit text for AI tells without modifying it.
+- **Destination:** choose **response** to return text in chat; **file** when authorized to modify a file; or **embedded** to supply prose inside another tool's output. Treat a filename as context, not permission to edit; modify a file only after explicit authorization.
 
 Preserve claims, facts, names, numbers, dates, quotes, citations, rankings, and constraints unless the user explicitly requests a creative transformation. In files, preserve code blocks, inline code, commands, paths, YAML metadata, data, and link targets.
 
-**Complete when:** the human-facing output, mode, and any write authorization are clear.
+**Complete when:** operation, destination, and any write authorization are clear.
 
 ### 2. Load the voice profile
 
-Load `${XDG_STATE_HOME:-$HOME/.local/state}/imprint/profile.md` once per active context. Check its refresh metadata without reading session bodies. Read [`PROFILE.md`](PROFILE.md) when the profile is missing, older than 90 days, contradicted, behind newer completed sessions, built with a changed selector, or missing the active canonical harness identifier. Otherwise use the cached profile unchanged.
+Load `${XDG_STATE_HOME:-$HOME/.local/state}/imprint/profile.md` once per active context. Check its refresh metadata without reading session bodies. Read [`PROFILE.md`](PROFILE.md) when the profile is missing, contradicted, behind newer completed sessions, built with a changed selector, missing the active canonical harness identifier, or older than 90 days without a freshness check. Otherwise use the cached profile unchanged.
 
-The current request and explicit corrections outrank the profile. Match only registers supported by evidence; conversational fragments do not define documentation voice.
+The current request and explicit corrections outrank the profile for this task. Apply one-off corrections in-session; persist a correction to `profile.md` only when the user states it as a general rule or lasting preference. Match only registers supported by evidence; conversational fragments do not define documentation voice.
 
 **Complete when:** a valid profile is available in working context, its freshness has been checked, and the requested register is supported or marked as a genre-based fallback.
 
@@ -58,12 +60,13 @@ Read composed or rewritten prose once for rhythm. In compose mode, verify that e
 
 **Complete when:** compose and rewrite results pass their source or request checklist with no unsupported additions; review findings all map to observed evidence; protected material is unchanged in file mode; and no unexplained change remains.
 
-## Output modes
+## Output delivery
 
-- **Compose mode:** place the finished human-facing prose directly in the surrounding task's normal output. Do not announce that Imprint was used.
-- **Rewrite mode:** return the rewritten text first. Add a brief `Remaining patterns` note only when useful or requested.
-- **Review mode:** report observed tells and concise guidance without rewriting or modifying the source.
-- **File mode:** after explicit authorization, write the prose through the surrounding file or document workflow, preserve protected material, then give a short summary.
+- **Compose:** place the finished human-facing prose directly into the target destination. Do not announce that Imprint was used.
+- **Rewrite:** return rewritten prose first. Add a brief `Remaining patterns` note only when useful or requested.
+- **Review:** report observed tells and concise guidance without drafting replacement prose or modifying files.
+- **File destination:** modify the target file only after explicit authorization, preserve protected non-prose material, then give a short summary.
+- **Embedded destination:** return only the exact prose needed by the surrounding tool or workflow.
 
 ## Privacy guardrails
 

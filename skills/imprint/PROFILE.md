@@ -33,8 +33,9 @@ Choose one branch:
 
 - **Valid profile, no new evidence:** use it unchanged.
 - **New completed sessions:** process only sessions newer than the watermark, capped at four sessions, eight excerpts, and 4,000 characters.
-- **Explicit correction:** update the affected profile rule immediately without scanning history.
-- **Missing or invalid profile, changed selector, unresolved contradiction, or profile older than 90 days:** rebuild it.
+- **Explicit durable preference:** update the affected profile rule immediately when the user states a lasting preference or rule. Apply one-off task instructions only to the current task without updating `profile.md`.
+- **Missing or invalid profile, changed selector, or unresolved contradiction:** rebuild it.
+- **Profile older than 90 days:** check session metadata to verify freshness; advance the refresh date if unchanged, or process newer sessions if present. Rebuild only if the selector, schema, or evidence contradicts the profile.
 
 Advance a watermark only after processing its sessions.
 
@@ -48,7 +49,7 @@ Keep at most 24 excerpts, 500 characters each, 12,000 characters total, and 1,50
 
 Infer observable style only: rhythm, vocabulary, recurring phrases, language mixing, punctuation, capitalization, fragments, formatting, directness, warmth, humor, uncertainty, emotional register, and ways of opening, transitioning, correcting, and closing.
 
-Separate observations by supported register. Conversational directives do not prove documentation or long-form prose style. When a requested register lacks evidence, use its genre conventions and the user's general plain-language habits rather than copying fragments from another register.
+Separate observations by supported register. Conversational directives do not prove documentation or long-form prose style. When a requested register lacks direct user evidence, state that limitation, use plain-speech defaults, and follow standard genre conventions rather than treating conversational fragments or chat quirks as documentation rules.
 
 ## Write the profile
 
