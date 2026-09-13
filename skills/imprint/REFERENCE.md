@@ -308,6 +308,40 @@ Remove these outright. Nothing here needs rewriting.
 **After:**
 > This function uses a hash map for O(1) lookups, avoiding the O(n²) cost of naive iteration.
 
+## F. Plain speech
+
+These rules catch mechanical prose that may not match a named AI phrase.
+
+### 26. Abstract technical metaphors
+
+**Watch for:** substrate, wedge, vector, locus, nexus, primitive, scaffolding, paradigm, north star, flywheel, or similar words used figuratively.
+**Problem:** The metaphor hides the mechanism. Name the concrete object, action, or limit instead. Keep terms that have a precise domain meaning.
+
+### 27. Claims about feeling instead of behavior
+
+**Problem:** Phrases such as "stays close at hand" or "feels seamless" describe an impression without explaining the behavior. State what the reader can do, what the system does, or a measured result. Cut a sentence that could describe any product unchanged.
+
+### 28. Dense sentences
+
+**Problem:** A sentence makes the reader backtrack through several clauses. Split it or remove secondary clauses. Keep related ideas together when splitting would make the prose choppy.
+
+### 29. Hidden actors
+
+**Problem:** Passive voice obscures who acts. Name the actor when it matters: "the compiler validates queries." Keep passive voice when the actor is unknown or irrelevant.
+
+### 30. Weak verbs propped up by modifiers
+
+**Problem:** An adverb or adjective claims force without evidence, such as "significantly improves" or "runs extremely quickly." Use a measured result or a stronger, accurate verb.
+
+### 31. Needlessly formal words
+
+**Watch for:** utilize, leverage, facilitate, numerous, in the event that, and similar inflated substitutes.
+**Problem:** Use the shortest familiar word that preserves the meaning: use, help, many, or if.
+
+### 32. Mannered or over-compressed prose
+
+**Problem:** Aphorisms, rhetorical fragments, dropped articles, symbol-speak, and figurative verbs make readers decode the sentence. Write a literal sentence with a subject and verb. Keep fragments and flourishes that are supported parts of the user's voice.
+
 ## When not to act
 
 Each pattern describes a default choice, and a person can make any one of them on purpose. Act on a *weak alone* tell only when several tells share a passage. Leave a watched phrase alone inside a quotation, a title, a proper name, or a passage that discusses the phrase rather than uses it. Salutations and sign-offs on a letter or comment predate chatbots. Text written before November 30, 2022 is not AI-written. People who judge by feel do little better than chance, and human writing keeps absorbing AI habits. Several tells together are the safeguard.
