@@ -15,10 +15,13 @@ Run autonomously and preserve correct behavior. After every action, immediately 
 
 ## 1. Setup
 
-1. Create a dedicated branch from a clean base.
-2. Check the required build, test, and measurement tools. If one is missing, ask the user to install it or approve installation.
-3. Run the tests. If they fail before changes, record the failures and ask whether to repair them or treat them as the known test baseline.
-4. Create a unique untracked `.perf/<run-id>/` directory:
+1. Resolve the project root with `git rev-parse --show-toplevel` and run the loop from there.
+2. Create a dedicated branch from a clean base.
+3. Prepare a fresh project-local workspace under `.perf/`:
+   - Ensure `/.perf/` is ignored. If the project does not already ignore it, add that rule to the repository's local `info/exclude` file resolved by `git rev-parse --git-path info/exclude`; keep the project working tree unchanged.
+   - Confirm `git ls-files -- .perf/` returns no tracked files. Stop at this setup boundary if it does.
+   - Generate a new UTC `<run-id>` for every invocation, such as `20260910T025549Z-whole-codebase`. Never reuse, delete, or overwrite an existing run directory; choose a new suffix if a collision occurs.
+   - Create the untracked directory:
 
 ```text
 .perf/<run-id>/
@@ -28,6 +31,11 @@ Run autonomously and preserve correct behavior. After every action, immediately 
 ├── attempts.tsv
 └── logs/
 ```
+
+The run workspace is local evidence, not a candidate change: leave it ignored and do not include it in source commits.
+
+4. Check the required build, test, and measurement tools. If one is missing, ask the user to install it or approve installation.
+5. Run the tests. If they fail before changes, record the failures and ask whether to repair them or treat them as the known test baseline.
 
 Use these headers:
 
@@ -44,7 +52,7 @@ attempt	part	baseline_id	hypothesis	approach	before	after	delta	result	evidence	
 
 Part status is one of `queued`, `active`, `saturated`, or `excluded`. Hypothesis status is one of `pending`, `tested`, or `pruned`. Attempt result is one of `keep`, `keep-simple`, `discard`, or `crash`; `inapplicable` belongs only in `hypotheses.tsv` as a `pruned` hypothesis.
 
-**Setup is complete when:** the test baseline is known and all three TSV files contain their headers.
+**Setup is complete when:** the test baseline is known, `.perf/` is ignored and untracked, and a new run directory exists with all three TSV files containing their headers.
 
 ## 2. Map the Workload
 
@@ -130,7 +138,7 @@ Check all of the following mechanically:
 - Pruned and `inapplicable` hypotheses contribute to neither attempt count nor saturation.
 - Every retained gain points to a commit from this run and was followed by re-profiling.
 - Every timeout appears in `attempts.tsv`.
-- Tests match the test baseline and the working tree contains only intentional retained files.
+- Tests match the test baseline, no path under `.perf/` is tracked, and the source working tree contains only intentional retained files; ignored run evidence is expected outside that source-change check.
 
 Route a failed check to its owning step. Proceed only when every check passes.
 
