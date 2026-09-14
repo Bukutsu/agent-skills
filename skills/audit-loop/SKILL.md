@@ -18,15 +18,26 @@ Audit an entire repository through $N$ project-tailored perspectives, resolve ro
 - Inspect layout, domain, dependencies, and test suite.
 - **Toolchain readiness**: If any required toolchain or test runner is missing: ask the user to install it or request confirmation to let the agent set it up.
 - Run tests to establish a green baseline.
-- Select $N$ independent perspectives with non-overlapping boundaries from the reference list below.
+- Select $N$ independent perspectives with non-overlapping boundaries from the reference list below. $N$ stays locked for the run.
 - **Completion criterion:** Test suite green and $N$ named perspectives with defined audit scopes selected.
 
 ### 2. Review Codebase
 Audit the repository across all $N$ selected perspectives:
 - **Subagent tools available:** Spawn $N$ parallel subagents concurrently (`subagent`, `task`), each reviewing whole-repo scope strictly within its perspective.
-- **No subagent tools:** Review the repository directly in-session across each perspective in sequence. Keep whole-repo scope for each.
-- Enforce the structured finding format from the reference section below.
-- **Completion criterion:** All $N$ perspectives evaluated and findings collated.
+- **No subagent tools:** Review one perspective at a time in sequence, whole-repo scope each. Finish the current perspective report block before starting the next.
+- Each perspective produces its own report block:
+```text
+## <perspective>
+Scope: <what this perspective covers>
+Files examined (n): <paths>
+Checks run: <commands + result>
+Findings:
+- [CRITICAL | IMPORTANT | MINOR] file:line - description -> fix
+- DECISION: description
+- VERDICT: CLEAN + reason naming what was verified
+```
+- A CLEAN counts only with file list, checks run, and reason. A bare verdict with no evidence does not satisfy the step.
+- **Completion criterion:** $N$ report blocks present, each with files examined, checks run, and findings or CLEAN with reason.
 
 ### 3. Fix & Commit
 - Order fix queue by severity (`CRITICAL` first). Park `DECISION` items for user review.
@@ -36,8 +47,8 @@ Audit the repository across all $N$ selected perspectives:
 - **Completion criterion:** Fix queue drained, working tree clean, and all tests passing.
 
 ### 4. Re-Audit & Exit
-- Re-audit all $N$ perspectives against the updated codebase using the same mechanism as Step 2.
-- **Exit criterion:** All $N$ perspectives return `VERDICT: CLEAN` in the same round with passing tests.
+- Re-audit all $N$ perspectives against the updated codebase using the same mechanism as Step 2. Re-read changed files plus a fresh sample per perspective; prior-round file lists do not count as fresh evidence.
+- **Exit criterion:** The same round holds $N$ CLEAN-with-reason blocks (each with fresh files examined and checks run) with passing tests.
 - **Summary**: Plain conversational English, zero jargon. State rounds run, fixes landed, test evidence, and open `DECISION` items. End with the single highest-leverage command or fix the user can run next.
 
 ---
@@ -50,7 +61,7 @@ Audit the repository across all $N$ selected perspectives:
   - `IMPORTANT`: latent bug, concurrency risk, or resource leak.
   - `MINOR`: cleanliness, debt, or clarity.
 - `DECISION: description`: behavior or API changes beyond existing intent (reserved for human choice).
-- `VERDICT: CLEAN`: perspective contains zero defects.
+- `VERDICT: CLEAN + reason`: zero defects found; reason names what was verified.
 
 ### Baseline Perspectives
 - **Contract breaks**: callers, APIs, return types, error paths.
