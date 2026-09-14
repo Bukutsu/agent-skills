@@ -3,7 +3,7 @@ name: audit-loop
 description: >-
   Autonomous iterative codebase audit and fix loop. Tailors N perspectives, resolves
   root causes with atomic commits, and loops until all perspectives report clean in
-  one round. Trigger for repo-wide quality sweeps or deep multi-angle audits.
+  one round. Trigger for repo-wide quality sweeps.
 ---
 
 # Audit Loop
@@ -12,10 +12,10 @@ Audit an entire repository through $N$ project-tailored perspectives, resolve ro
 
 ## Workflow
 
-- **Execution invariant**: Run continuously and autonomously across all rounds. Do not pause to report intermediate progress; complete the loop only when the exit criterion is met.
+- **Run rule**: Continue through all rounds autonomously and report only at the exit criterion.
 
 ### 1. Orientation & Perspective Selection
-- Inspect layout, domain, dependencies, and test suite.
+- List top-level entries, note domain and dependencies, and read the manifest-declared test command.
 - **Toolchain readiness**: If any required toolchain or test runner is missing: ask the user to install it or request confirmation to let the agent set it up.
 - Run tests to establish a green baseline.
 - Select $N$ independent perspectives with non-overlapping boundaries from the reference list below. $N$ stays locked for the run.
@@ -34,7 +34,7 @@ Checks run: <commands + result>
 Findings:
 - [CRITICAL | IMPORTANT | MINOR] file:line - description -> fix
 - DECISION: description
-- VERDICT: CLEAN + reason naming what was verified
+- VERDICT: CLEAN + reason (per Finding Schema below)
 ```
 - A CLEAN counts only with file list, checks run, and reason. A bare verdict with no evidence does not satisfy the step.
 - **Completion criterion:** $N$ report blocks present, each with files examined, checks run, and findings or CLEAN with reason.

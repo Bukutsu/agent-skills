@@ -44,7 +44,7 @@ Derive live rules from the observed prompts:
 
 Fall back to plain direct prose plus the anti-AI catalog when history is thin. The current request and explicit instructions outrank inferred rules for the task.
 
-**Complete when:** live voice rules for this user are active in working context.
+**Complete when:** opening habit, rhythm, punctuation habit, and register split are recorded for this user.
 
 ### 3. Set the voice guard and anti-AI patterns
 
@@ -56,7 +56,7 @@ Compact guard: state the point directly; use concrete claims and plain words; ne
 
 ### 4. Produce the result
 
-In compose mode, derive content only from the current request, supplied facts, and explicit constraints. In rewrite mode, keep every supported claim; structure and repetition may change, but do not add or drop a fact, name, number, date, quote, citation, ranking, opinion, or claim. In review mode, report findings and guidance without drafting replacement prose.
+In compose mode, derive content only from the current request, supplied facts, and explicit constraints. In rewrite mode, apply the catalog preservation rule; structure and repetition may change. In review mode, report findings and guidance without drafting replacement prose.
 
 User prompts provide style evidence only, never factual content. If a needed detail is missing, ask for it or write a simpler sentence. A creative transformation may invent detail only when explicitly requested.
 
