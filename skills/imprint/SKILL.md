@@ -28,32 +28,27 @@ Preserve claims, facts, names, numbers, dates, quotes, citations, rankings, and 
 
 **Complete when:** operation, destination, and any write authorization are clear.
 
-### 2. Apply the user's voice rules
+### 2. Infer voice from session prompts
 
-Ground truth voice rules derived directly from 730 verified user session prompts across 59 sessions:
+The ground truth for voice is the current user's session prompts only (`role: "user"`). Never sample assistant messages, tool outputs, or repo files as voice evidence. This keeps the skill generic: it profiles whoever is using it, at runtime, with nothing personal stored in the repo.
 
-- **Lead directly with the action or outcome:** Open immediately with the command or factual result; skip greetings, polite warmups, and meta-commentary.
-- **Short sentence rhythm:** Prefer 1–2 clauses per sentence (median 9–15 words). Avoid nested subordinate clauses and multi-sentence wind-ups.
-- **Plain, concrete language:** Use plain physical verbs (`make`, `run`, `fix`, `add`, `check`, `remove`, `set up`) over formal nominalizations (`facilitate`, `utilize`, `implement`).
-- **Punctuation rules:**
-  - Zero em dashes (`—`) or en dashes (`–`). Use colons, periods, commas, parentheses, or plain hyphens (`-`) instead.
-  - Use plain hyphens (`-`) for list items, colons (`:`) for introducing definitions or next steps, and commas for rhythm.
-  - Zero decorative exclamation marks.
-- **Two distinct registers:**
-  - *Conversational / Directives:* Direct, informal, fast. Allows lowercase lead, casual contractions (`dont`, `cant`, `thats`, `its`), and concise imperative commands.
-  - *Documentation / Public prose:* Sentence-case headings, standard clean structure, complete grammatical sentences, and exact identifiers (paths, flags, configs). Never use marketing fluff, promotional adjectives, or mannered aphorisms.
-- **Zero jargon tolerance:** Explain what things do in plain terms. Ban corporate buzzwords, pseudo-technical metaphors (substrate, flywheel), and empty adjectives.
-- **Exact identifiers:** Keep filenames, commands, paths, parameters, and tool names exact.
-- **Co-locate practical constraints:** State caveats and boundaries immediately beside the action they affect.
-- **End immediately after the useful deliverable:** Stop once the result is delivered; never append generic wrap-up paragraphs, sign-offs, or offers to help further.
+Derive live rules from the observed prompts:
+- Openings: how prompts start (direct command, question, fact) and whether greetings appear.
+- Rhythm: typical sentence length and clause density.
+- Vocabulary: plain versus formal words, recurring verbs, jargon tolerance.
+- Punctuation: dash, hyphen, colon, and comma habits actually demonstrated.
+- Registers: conversational directives versus documentation prose, and what changes between them.
+- Identifiers: how filenames, commands, paths, and tool names are kept.
+- Constraints: where caveats and boundaries are placed.
+- Closings: whether prompts end abruptly or with sign-offs.
 
-When sampling history to verify style, inspect **user session prompts only** (`role: "user"`). Ignore assistant responses, tool outputs, and historical system prompts. The current request and explicit instructions outrank these rules for the task.
+Fall back to plain direct prose plus the anti-AI catalog when history is thin. The current request and explicit instructions outrank inferred rules for the task.
 
-**Complete when:** voice rules are active in working context.
+**Complete when:** live voice rules for this user are active in working context.
 
 ### 3. Set the voice guard and anti-AI patterns
 
-In compose and rewrite modes, turn the request and voice rules into a voice guard: required content, register, rhythm, formatting, and supported habits. Check against the **Anti-AI pattern catalog** below. In review mode, inspect the source against the catalog and cite evidence for each finding.
+In compose and rewrite modes, turn the request and inferred voice into a voice guard: required content, register, rhythm, formatting, and supported habits. Check against the **Anti-AI pattern catalog** below. In review mode, inspect the source against the catalog and cite evidence for each finding.
 
 Compact guard: state the point directly; use concrete claims and plain words; never use em dashes (`—`) or en dashes (`–`); avoid staged openings, generic conclusions, unsupported significance, vague authority, chatbot residue, decorative formatting, and repetitive rhetorical templates.
 
@@ -98,7 +93,7 @@ In compose mode, verify that every requested point is covered, unsupported factu
 
 A pattern is evidence, not proof.
 - **Strong:** act on one clear occurrence.
-- **Contextual:** act when the pattern repeats, clusters with another pattern, or conflicts with the voice profile or genre.
+- **Contextual:** act when the pattern repeats, clusters with another pattern, or conflicts with the inferred voice or genre.
 - Keep quotations, titles, proper names, technical terms, legal language, and deliberate rhetoric intact.
 - Preserve every supported fact, opinion, number, citation, link target, and constraint.
 - When a correction would require inventing information, keep the source wording or remove the unsupported claim.
@@ -121,7 +116,7 @@ Replace the framing with the specific claim.
 
 #### Staged opening
 **Watch for:** “Let’s dive in,” “Here’s what you need to know,” “Without further ado,” “Quick note,” “Here’s the thing,” “Honestly?” and similar run-ups.
-Start with the point. Keep an ordinary conversational word when the voice profile supports it and it belongs inside the sentence.
+Start with the point. Keep an ordinary conversational word when the inferred voice supports it and it belongs inside the sentence.
 
 #### Invented objection
 **Watch for:** “I’m not saying,” “To be clear,” “Don’t get me wrong,” “Some might say,” “You might think,” and hypothetical alternatives no reader needs.
@@ -222,7 +217,7 @@ The reader must backtrack through several clauses. Split the sentence or remove 
 “Utilize,” “leverage,” “facilitate,” “numerous,” and “in the event that” replace familiar words. Prefer “use,” “help,” “many,” and “if” when meaning stays intact.
 
 #### Mannered or compressed prose
-Aphorisms, rhetorical fragments, dropped articles, symbol-speak, and figurative verbs make the reader decode the sentence. Write a literal sentence with a subject and verb unless the voice profile supports the flourish.
+Aphorisms, rhetorical fragments, dropped articles, symbol-speak, and figurative verbs make the reader decode the sentence. Write a literal sentence with a subject and verb unless the inferred voice supports the flourish.
 
 ### Voice restoration check
 
