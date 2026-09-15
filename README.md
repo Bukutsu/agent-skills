@@ -11,7 +11,7 @@ git clone https://github.com/Bukutsu/agent-skills
 cd agent-skills
 
 # install each source once
-npx skills add anthropics/skills -g --skill docx --skill pdf --skill pptx --skill xlsx -y
+npx skills add anthropics/skills -g --skill docx --skill frontend-design --skill pdf --skill pptx --skill xlsx -y
 npx skills add cursor/plugins -g --skill bro --skill how --skill typescript-best-practices --skill why -y
 npx skills add mattpocock/skills -g --skill handoff --skill writing-for-agents -y
 npx skills add mgranberry/mermaid-diagram-skill -g --skill mermaid-diagram -y
@@ -23,7 +23,7 @@ npx skills add tinyfish-io/tinyfish-cookbook -g --skill use-tinyfish -y
 cp -r skills/* ~/.agents/skills/
 ```
 
-Check the install with `npx skills ls -g`. It should list 18 skills: 14 external and 4 local.
+Check the install with `npx skills ls -g`. It should list 19 skills: 15 external and 4 local.
 
 The local skills are `audit-loop`, `git-peek`, `imprint`, and `perf-loop`.
 
