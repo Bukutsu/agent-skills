@@ -13,6 +13,7 @@ Audit an entire repository through $N$ project-tailored perspectives, resolve ro
 ## Workflow
 
 - **Run rule**: Continue through all rounds autonomously and report only at the exit criterion.
+- **Context rule**: Keep context lean. Auditing is adversarial falsification, not passive reading. Search targeted patterns with grep or symbol queries, and read bounded slices (20-40 lines around boundaries and call sites). Dumping whole files into context exhausts attention and causes premature exit.
 
 ### 1. Orientation & Perspective Selection
 - List top-level entries, note domain and dependencies, and read the manifest-declared test command.
@@ -24,20 +25,23 @@ Audit an entire repository through $N$ project-tailored perspectives, resolve ro
 ### 2. Review Codebase
 Audit the repository across all $N$ selected perspectives:
 - **Subagent tools available:** Spawn $N$ parallel subagents concurrently (`subagent`, `task`), each reviewing whole-repo scope strictly within its perspective.
-- **No subagent tools:** Review one perspective at a time in sequence, whole-repo scope each. Finish the current perspective report block before starting the next.
+- **No subagent tools:** Review one perspective at a time in sequence, whole-repo scope each. Use targeted pattern queries and bounded slice reads. Complete each perspective block before moving to the next.
+- For each perspective, formulate at least two concrete **failure hypotheses** (specific ways code could fail, drop errors, corrupt state, or leak resources) and actively probe them. Existing tests passing is not an audit check; audit probes hunt for defects existing tests miss.
 - Each perspective produces its own report block:
 ```text
 ## <perspective>
-Scope: <what this perspective covers>
-Files examined (n): <paths>
-Checks run: <commands + result>
+Scope: <boundaries covered>
+Probes run: <pattern searches and bounded checks executed>
+Hypotheses tested:
+1. <failure hypothesis> -> [CONFIRMED finding | REFUTED by file:line mechanism]
+2. <failure hypothesis> -> [CONFIRMED finding | REFUTED by file:line mechanism]
 Findings:
 - [CRITICAL | IMPORTANT | MINOR] file:line - description -> fix
 - DECISION: description
 - VERDICT: CLEAN + reason (per Finding Schema below)
 ```
-- A CLEAN counts only with file list, checks run, and reason. A bare verdict with no evidence does not satisfy the step.
-- **Completion criterion:** $N$ report blocks present, each with files examined, checks run, and findings or CLEAN with reason.
+- A CLEAN verdict requires every tested hypothesis to be refuted with an exact file:line citation and mechanism. A generic summary or listing passing test commands does not satisfy the step.
+- **Completion criterion:** $N$ report blocks present, each with probes run, at least two hypotheses tested with code-level proof, and findings or CLEAN with reason.
 
 ### 3. Fix & Commit
 - Order fix queue by severity (`CRITICAL` first). Park `DECISION` items for user review.
@@ -47,8 +51,10 @@ Findings:
 - **Completion criterion:** Fix queue drained, working tree clean, and all tests passing.
 
 ### 4. Re-Audit & Exit
-- Re-audit all $N$ perspectives against the updated codebase using the same mechanism as Step 2. Re-read changed files plus a fresh sample per perspective; prior-round file lists do not count as fresh evidence.
-- **Exit criterion:** The same round holds $N$ CLEAN-with-reason blocks (each with fresh files examined and checks run) with passing tests.
+- Re-audit all $N$ perspectives against the updated codebase using the same mechanism as Step 2.
+  - If Round 1 produced zero findings across all $N$ perspectives: execute a **depth probe** on the highest-complexity module in each perspective (audit error paths, unwraps/panics, cancellation, or concurrency limits under stress). Round 1 exits only when depth probes refute failure hypotheses with concrete code citations.
+  - In subsequent rounds: re-probe changed files plus a fresh sample per perspective; prior-round probe lists do not count as fresh evidence.
+- **Exit criterion:** The same round holds $N$ verified CLEAN-with-reason blocks (each with fresh probes run and code-cited hypothesis refutations) with passing tests.
 - **Summary**: Plain conversational English, zero jargon. State rounds run, fixes landed, test evidence, and open `DECISION` items. End with the single highest-leverage command or fix the user can run next.
 
 ---
@@ -61,10 +67,10 @@ Findings:
   - `IMPORTANT`: latent bug, concurrency risk, or resource leak.
   - `MINOR`: cleanliness, debt, or clarity.
 - `DECISION: description`: behavior or API changes beyond existing intent (reserved for human choice).
-- `VERDICT: CLEAN + reason`: zero defects found; reason names what was verified.
+- `VERDICT: CLEAN + reason`: zero defects found; reason names the refuted hypotheses and citing lines.
 
 ### Baseline Perspectives
-- **Contract breaks**: callers, APIs, return types, error paths.
-- **Data shape**: invariants, state ownership, schema validation.
-- **Explicit control**: swallowed errors, hidden side effects, unhandled edge cases.
-- **Resource lifecycle**: acquisition, teardown, handles, connection limits.
+- **Contract breaks**: callers, APIs, return types, error paths, unhandled status codes.
+- **Data shape**: invariants, state ownership, schema validation, backward compatibility, atomic updates.
+- **Explicit control**: swallowed errors (`.ok()`, `let _ =`, `unwrap_or_default`), hidden side effects, missing cancellation guards, silent fallbacks.
+- **Resource lifecycle**: acquisition, teardown, handles, connection limits, unbounded channels/buffers, process kill groups.
