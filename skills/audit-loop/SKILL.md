@@ -43,7 +43,7 @@ Findings:
 - **Completion criterion:** $N$ report blocks present, each with probes run, at least two hypotheses tested with code-level proof, and findings or CLEAN with reason.
 
 ### 3. Fix & Commit
-- Order fix queue by severity (`CRITICAL` first, then `IMPORTANT`, then `MINOR`). Resolve every finding autonomously; when trade-offs arise, make the best principled choice that preserves existing caller contracts and project conventions.
+- Order fix queue by severity (`CRITICAL` first, then `IMPORTANT`, then `MINOR`). Resolve every finding autonomously; when trade-offs arise, pick the fix that best matches the surrounding code style and idioms while preserving caller contracts.
 - Fix root causes in the shared path. Keep diffs surgical: every line traces to a finding. Preserve observable behavior.
 - Validate each fix: compile, type-check, lint, and test suite.
 - Commit each verified fix individually with an explanatory message (`fix: <cause and remedy>`).
