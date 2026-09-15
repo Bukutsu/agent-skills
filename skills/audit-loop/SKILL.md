@@ -37,14 +37,13 @@ Hypotheses tested:
 2. <failure hypothesis> -> [CONFIRMED finding | REFUTED by file:line mechanism]
 Findings:
 - [CRITICAL | IMPORTANT | MINOR] file:line - description -> fix
-- DECISION: description
 - VERDICT: CLEAN + reason (per Finding Schema below)
 ```
 - A CLEAN verdict requires every tested hypothesis to be refuted with an exact file:line citation and mechanism. A generic summary or listing passing test commands does not satisfy the step.
 - **Completion criterion:** $N$ report blocks present, each with probes run, at least two hypotheses tested with code-level proof, and findings or CLEAN with reason.
 
 ### 3. Fix & Commit
-- Order fix queue by severity (`CRITICAL` first). Park `DECISION` items for user review.
+- Order fix queue by severity (`CRITICAL` first, then `IMPORTANT`, then `MINOR`). Resolve every finding autonomously; when trade-offs arise, make the best principled choice that preserves existing caller contracts and project conventions.
 - Fix root causes in the shared path. Keep diffs surgical: every line traces to a finding. Preserve observable behavior.
 - Validate each fix: compile, type-check, lint, and test suite.
 - Commit each verified fix individually with an explanatory message (`fix: <cause and remedy>`).
@@ -55,7 +54,7 @@ Findings:
   - If Round 1 produced zero findings across all $N$ perspectives: execute a **depth probe** on the highest-complexity module in each perspective (audit error paths, unwraps/panics, cancellation, or concurrency limits under stress). Round 1 exits only when depth probes refute failure hypotheses with concrete code citations.
   - In subsequent rounds: re-probe changed files plus a fresh sample per perspective; prior-round probe lists do not count as fresh evidence.
 - **Exit criterion:** The same round holds $N$ verified CLEAN-with-reason blocks (each with fresh probes run and code-cited hypothesis refutations) with passing tests.
-- **Summary**: Plain conversational English, zero jargon. State rounds run, fixes landed, test evidence, and open `DECISION` items. End with the single highest-leverage command or fix the user can run next.
+- **Summary**: Plain conversational English, zero jargon. State rounds run, fixes landed, and test evidence. End with the single highest-leverage command the user can run next.
 
 ---
 
@@ -66,7 +65,6 @@ Findings:
   - `CRITICAL`: breaks a contract or produces wrong output.
   - `IMPORTANT`: latent bug, concurrency risk, or resource leak.
   - `MINOR`: cleanliness, debt, or clarity.
-- `DECISION: description`: behavior or API changes beyond existing intent (reserved for human choice).
 - `VERDICT: CLEAN + reason`: zero defects found; reason names the refuted hypotheses and citing lines.
 
 ### Baseline Perspectives
