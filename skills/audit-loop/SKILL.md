@@ -24,9 +24,9 @@ Audit an entire repository through $N$ project-tailored perspectives, resolve ro
 
 ### 2. Review Codebase
 Audit the repository across all $N$ selected perspectives:
-- **Subagent tools available:** Spawn $N$ parallel subagents concurrently (`subagent`, `task`), each reviewing whole-repo scope strictly within its perspective.
+- **Subagent tools available:** Spawn $N$ parallel subagents concurrently (`subagent`, `task`), each reviewing whole-repo scope strictly within its perspective using targeted pattern queries and bounded slice reads.
 - **No subagent tools:** Review one perspective at a time in sequence, whole-repo scope each. Use targeted pattern queries and bounded slice reads. Complete each perspective block before moving to the next.
-- For each perspective, formulate at least two concrete **failure hypotheses** (specific ways code could fail, drop errors, corrupt state, or leak resources) and actively probe them. Existing tests passing is not an audit check; audit probes hunt for defects existing tests miss.
+- For each perspective, formulate at least two concrete **failure hypotheses** (specific ways code could fail, drop errors, corrupt state, or leak resources) and actively probe them. Audit probes hunt for defects that the test suite misses; test passes confirm baseline only.
 - Each perspective produces its own report block:
 ```text
 ## <perspective>
