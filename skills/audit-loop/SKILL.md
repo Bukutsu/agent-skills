@@ -24,8 +24,9 @@ Audit an entire repository through $N$ project-tailored perspectives, resolve ro
 
 ### 2. Review Codebase
 Audit the repository across all $N$ selected perspectives:
-- **Subagent tools available:** Spawn $N$ parallel subagents concurrently (`subagent`, `task`), each reviewing whole-repo scope strictly within its perspective using targeted pattern queries and bounded slice reads.
-- **No subagent tools:** Review one perspective at a time in sequence, whole-repo scope each. Use targeted pattern queries and bounded slice reads. Complete each perspective block before moving to the next.
+- **Delegation authority:** Multi-perspective review is explicitly authorized to delegate. When a subagent or task tool (`subagent`, `task`) is declared in the environment, parallel delegation is mandatory, not optional. Direct sequential execution is strictly a fallback when no subagent tool exists.
+- **Dispatching subagents:** Spawn $N$ parallel subagent reviewers concurrently, one per perspective. Each reviewer receives whole-repo scope strictly within its assigned perspective, using targeted pattern queries and bounded slice reads. In Pi, compose parallel child runs in a single `subagent` call (`workflowScript` with `await runs.all([...])`). In other harnesses, call the environment's `subagent` or `task` tool concurrently.
+- **Direct sequential fallback:** When no subagent tool exists in the environment, review one perspective at a time in sequence, whole-repo scope each. Use targeted pattern queries and bounded slice reads. Complete each perspective block before moving to the next.
 - For each perspective, formulate at least two concrete **failure hypotheses** (specific ways code could fail, drop errors, corrupt state, or leak resources) and actively probe them. Audit probes hunt for defects that the test suite misses; test passes confirm baseline only.
 - Each perspective produces its own report block:
 ```text
