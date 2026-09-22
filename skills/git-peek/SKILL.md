@@ -1,45 +1,49 @@
 ---
 name: git-peek
 description: >-
-  Inspect external Git repositories by shallow-cloning to a persistent cache.
-  Use when the user gives owner/repo or a GitHub/GitLab URL,
-  or asks to inspect remote structure or symbols.
-  Not for local workspace files.
+  Inspect external Git repositories when given a repository URL or owner/repo,
+  or asked about remote source structure or symbols.
 ---
 
 # Git Peek
 
-Shallow-clone external Git repositories to a local cache to inspect structure, search symbols, and read source files without web API rate limits.
+Reuse shallow clones for source inspection. Keep cached repositories read-only except for authorized refreshes.
 
-## Workflow
+## 1. Resolve source and cache
 
-### 1. Ensure repository is available
-Cache path: `/tmp/git-peek/<owner>/<repo>`.
+Resolve the clone URL, host, owner, repository, and any requested branch, tag, or commit. Expand owner/repo to a clone URL for the intended host. Include the host in the cache key to separate identically named repositories.
 
-- **Cache hit:** use the cache immediately. Refresh only when asked:
-  ```bash
-  git -C "/tmp/git-peek/<owner>/<repo>" pull --ff-only || (rm -rf "/tmp/git-peek/<owner>/<repo>" && git clone --depth 1 <repo-url-or-slug> "/tmp/git-peek/<owner>/<repo>")
-  ```
-- **Cache miss:**
-  ```bash
-  mkdir -p "/tmp/git-peek/<owner>"
-  git clone --depth 1 <repo-url-or-slug> "/tmp/git-peek/<owner>/<repo>"
-  ```
+Choose a permitted cache root:
+- Default: `${XDG_CACHE_HOME:-$HOME/.cache}/git-peek`.
+- Workspace-confined harness: `<workspace>/.git-peek`. Use this directly when outside access is restricted; respect the sandbox rather than seeking broader access just for caching.
 
-**Complete when:** the repo is present at the cache path.
+For a cache inside a Git repository, resolve the repository root and exclude path with `git rev-parse --show-toplevel` and `git rev-parse --git-path info/exclude`. Add the cache's root-relative ignore pattern once and verify it with `git check-ignore`. In worktrees, the exclude file may be outside the permitted workspace: if it is inaccessible, request permission or an approved ignore location before cloning. Outside Git, no ignore setup is needed.
 
-### 2. Inspect with available tools
-Use your harness's search, directory listing, and file-reading tools on the cache path:
-- Check directory structure to understand architecture and entry points.
-- Search for relevant symbols, function names, and configuration files.
-- Read specific implementation files.
+Set the cache path to `<cache-root>/<host>/<owner>/<repo>`. Treat URL components as path segments, rejecting traversal or paths outside the selected root. An older cache may be reused after verifying its origin and requested revision; migration or deletion requires authorization.
 
-**Complete when:** architecture, entry points, and target symbols are located with paths noted.
+**Complete when:** source, requested revision, permitted cache path, and any required ignore rule are resolved.
 
-### 3. Answer
-Answer the user's question, citing exact file paths and line numbers from the repository.
+## 2. Reuse or clone
 
-**Complete when:** the answer cites file:line for every claim.
+- Cache hit: verify it is a Git repository and its origin matches the requested source. Use its current revision for ordinary inspection.
+- Cache miss: create its parent directory and run `git clone --depth 1 <clone-url> <cache-path>` with quoted, resolved arguments.
+- Freshness request: when asked for latest/current source or an update comparison, fetch the relevant ref. Otherwise refresh only when asked. Preserve local modifications and avoid changing a checkout another session is using; use a separate revision-specific checkout when needed.
+- Refresh failure: preserve the cache and report the error. An old checkout may support a clearly labeled historical answer, not a claim about current source. A failed pull never authorizes deleting the cache.
+
+For a requested tag or commit missing from the shallow clone, fetch that ref. Record the commit actually inspected with `git rev-parse HEAD`.
+
+**Complete when:** the verified clone contains the requested source at an identified revision.
+
+**Blocked:** report retrieval failures and pause claims that require unavailable source.
+
+## 3. Inspect and answer
+
+Search relevant symbols and read bounded slices around definitions and callers. Exclude cached foreign source from searches of the user's own project.
+
+Answer with repository paths, line numbers, and the inspected commit. Distinguish code-backed facts from inference. If the target is absent, cite the search scope and limits instead of inventing a location.
+
+**Complete when:** source claims have traceable evidence and missing or stale evidence is explicit.
 
 ## Retention
-Retain the cache path across turns so follow-up questions proceed without re-cloning. The OS `/tmp` cleans the cache across reboots; remove the cache path only when explicitly requested.
+
+Reuse the cache across sessions. Remove cached repositories only when explicitly requested.

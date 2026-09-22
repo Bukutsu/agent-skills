@@ -13,6 +13,8 @@ argument-hint: "[target area / module / flow] (optional: omit to scan entire pro
 
 Run autonomously and preserve correct behavior. After every action, immediately take the next action defined below. The next user-facing response after setup begins is either a setup blocker or the final report. Baselines, retained improvements, failed experiments, and completed hotspots are intermediate states.
 
+A user stop or finalize request overrides the loop. Save the current candidate diff and evidence, retain only verified improvements, and revert only this run's unfinished changes. Report the run as interrupted with remaining hotspots, not saturated. Merge, push, or deploy only when authorized.
+
 ## 1. Setup
 
 1. Resolve the project root with `git rev-parse --show-toplevel` and run the loop from there.
@@ -34,7 +36,7 @@ Run autonomously and preserve correct behavior. After every action, immediately 
 
 The run workspace is local evidence, not a candidate change: leave it ignored and do not include it in source commits.
 
-4. Check the required build, test, and measurement tools. If one is missing, ask the user to install it or approve installation.
+4. Check the required build, test, and measurement tools. Use existing installation authorization when it covers the tool and host; otherwise ask before installing missing tools.
 5. Run the tests. If they fail before changes, record the failures and ask whether to repair them or treat them as the known test baseline.
 
 Use these headers:
@@ -61,7 +63,9 @@ Choose one path:
 - **Target specified:** Treat the named module, route, or flow as the scope boundary. Trace every stage through calls, data changes, and resource use. Follow costly calls into deeper layers until each cost belongs to a concrete function, query, loop, allocation, conversion, or I/O operation.
 - **No target specified:** Map the whole codebase architecture. Find entry points from manifests and source files, identify major components, trace calls and data between them, and mark computation, memory, storage, and network boundaries.
 
-Write the complete user or caller operation and its usable-completion boundary to `map.md`. Measure end-to-end cost, then decompose it into concrete hotspots. For each hotspot, record its measured share of the complete workload, limiting mechanism, and whether the repository controls that mechanism. CPU profile percentages are evidence about CPU time, not request wall time; keep denominators explicit.
+Write the user-visible objective, complete operation, and usable-completion boundary to `map.md`. Keep startup, time to first output, steady-state throughput, and memory as separate metrics. Optimize the requested metric; report other gains separately. For remote providers, measure the actual request shape and fallback chain, including queueing, retries, and quota failures.
+
+Measure end-to-end cost, then decompose it into concrete hotspots. For each hotspot, record its measured share of the complete workload, limiting mechanism, and whether the repository controls that mechanism. CPU profile percentages are evidence about CPU time, not request wall time; keep denominators explicit.
 
 A hotspot may be `excluded` only with evidence for one of these conditions:
 
@@ -103,7 +107,7 @@ Run one pending hypothesis at a time:
 2. **Change:** Make one small candidate diff within the bound editable files. Distinct approaches change different work, representation, ownership, batching, or execution mechanisms; parameter tweaks and cosmetic variants of one mechanism are one approach.
 3. **Check:** Run the test baseline and complete benchmark. Save output under `logs/` and inspect the metrics or last 40 lines.
 4. **Record and route:**
-   - Tests match and improvement is at least 5%: record numeric before/after evidence as `keep`, commit, and continue at **Re-profile**.
+   - Tests match and improvement is at least 5% and exceeds measured noise: record numeric before/after evidence as `keep`, commit, and continue at **Re-profile**.
    - Tests match, performance is within measured noise, and the diff observably removes a branch, allocation, query, call, conversion, or repeated operation from the measured path: record `keep-simple`, commit, and continue at **Re-profile**.
    - Tests fail, time out, or miss both keep gates: record `crash` or `discard`, restore the candidate diff, capture the result as an insight, and select or generate the next hypothesis.
 
@@ -140,7 +144,7 @@ Check all of the following mechanically:
 - Every timeout appears in `attempts.tsv`.
 - Tests match the test baseline, no path under `.perf/` is tracked, and the source working tree contains only intentional retained files; ignored run evidence is expected outside that source-change check.
 
-Route a failed check to its owning step. Proceed only when every check passes.
+Route a failed check to its owning step. Proceed only when every check passes. If an environment constraint prevents completion, report a blocked run with unfinished hotspots. Calling further experiments unnecessary does not satisfy saturation; use a measured exclusion when its criteria apply.
 
 ## 8. Finish
 
@@ -157,7 +161,7 @@ Report separately:
 
 Label claims as measured, derived, hypothesized, or unvalidated. Ask whether to retain or remove only benchmarks and `[PERF-PROBE]` code introduced by this run; leave existing measurement code untouched.
 
-**Finish is complete when:** every hotspot appears in exactly one report section, every current-run gain names its commit, the final test result is reported, and the measurement-code question names only files introduced by this run.
+**Finish is complete when:** every hotspot has a reported final status, retained changes and final-baseline saturation evidence are distinguished, every current-run gain names its commit, the final test result is reported, and the measurement-code question names only files introduced by this run.
 
 ## Optimization Order
 
