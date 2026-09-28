@@ -35,11 +35,11 @@ If sources conflict, check version applicability and verify locally.
 
 Match verified contracts while preserving project conventions and caller behavior. A newer documented option alone does not justify a migration. Choose the smallest compatible change; ask only when the choice changes requested scope or public behavior.
 
-For builds, inspect version-matched build instructions and dependency declarations before requesting installation. Check installed headers, libraries, and runtime assets, then give one consolidated list of known missing prerequisites for the target platform. Use the documented build entry point, hooks, and feature flags.
+For build, CI, packaging, or release changes, read [Build and release verification](references/build-release.md) before editing and apply its checks during implementation. It covers prerequisites, clean-checkout checks, platform branches, and revision-specific delivery evidence.
 
 For integrations, verify both sides of the boundary, including reload/cancellation lifetimes and subprocess output routing when relevant. Prefer sanitized fixtures captured from the actual dependency or tool version; check that mocks preserve its input/output format. If only synthetic fixtures are available, state that limit.
 
-Run focused checks on the changed behavior. Preserve each check's exit status when filtering output (for example, use `pipefail` for shell pipelines); separate expected failing probes from checks that must pass. For packaging bugs, exercise the failing action in the affected packaged build, not just a development build or app launch. If the target environment is unavailable, state the validation limit.
+Run focused checks on the changed behavior. Capture output to a log and save the check's exit status before displaying excerpts or running cleanup. Propagate each required failure through the enclosing command; `pipefail` alone does not stop later commands from masking it. Separate expected failing probes from checks that must pass. For packaging bugs, exercise the failing action in the affected packaged build, not just a development build or app launch. If the target environment is unavailable, state the validation limit.
 
 **Complete when:** the implementation follows the verified contracts and relevant checks have recorded outcomes, with any runtime validation gap explicit.
 
