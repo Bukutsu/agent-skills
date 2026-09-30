@@ -30,15 +30,15 @@ Set the cache path to `<cache-root>/<host>/<owner>/<repo>`. Treat URL components
 - Freshness request: when asked for latest/current source or an update comparison, fetch the relevant ref. Otherwise refresh only when asked. Preserve local modifications and avoid changing a checkout another session is using; use a separate revision-specific checkout when needed.
 - Refresh failure: preserve the cache and report the error. An old checkout may support a clearly labeled historical answer, not a claim about current source. A failed pull never authorizes deleting the cache.
 
-For a requested tag or commit missing from the shallow clone, fetch that ref. Record the commit actually inspected with `git rev-parse HEAD`.
+For a requested branch, tag, or commit missing from the shallow clone, fetch that ref. Resolve the requested or freshly fetched ref to a commit and inspect it with revision-qualified reads such as `git show <commit>:<path>` or a separate revision-specific checkout. Fetching alone does not select the inspected revision. Leave the shared checkout unchanged and cite the resolved commit; use `git rev-parse HEAD` only when inspecting the default cached checkout.
 
-**Complete when:** the verified clone contains the requested source at an identified revision.
+**Complete when:** the source is verified and inspection targets the resolved requested or refreshed commit, or the identified default checkout for ordinary inspection.
 
 **Blocked:** report retrieval failures and pause claims that require unavailable source.
 
 ## 3. Inspect and answer
 
-Search relevant symbols and read bounded slices around definitions and callers. Exclude cached foreign source from searches of the user's own project.
+Search relevant symbols and read bounded slices around definitions and callers in the selected revision. Exclude cached foreign source from searches of the user's own project.
 
 Answer with repository paths, line numbers, and the inspected commit. Distinguish code-backed facts from inference. If the target is absent, cite the search scope and limits instead of inventing a location.
 

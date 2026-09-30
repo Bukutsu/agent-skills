@@ -2,7 +2,7 @@
 name: docs-first
 description: >-
   Verify official documentation before changing external library, SDK, or framework
-  APIs, integrations, or build and release configuration.
+  APIs, integrations and their configuration, or build and release configuration.
 ---
 
 # Docs First
@@ -37,11 +37,13 @@ Match verified contracts while preserving project conventions and caller behavio
 
 For build, CI, packaging, or release changes, read [Build and release verification](references/build-release.md) before editing and apply its checks during implementation. It covers prerequisites, clean-checkout checks, platform branches, and revision-specific delivery evidence.
 
-For integrations, verify both sides of the boundary, including reload/cancellation lifetimes and subprocess output routing when relevant. Prefer sanitized fixtures captured from the actual dependency or tool version; check that mocks preserve its input/output format. If only synthetic fixtures are available, state that limit.
+For integrations, trace configured values through the application's parser and adapter to the serialized request or subprocess arguments. Check exact identifiers, endpoints, request limits, fallback order, reload/cancellation lifetimes, and output routing where affected. Verify this application path locally with the intended configuration and representative settings; direct dependency or provider calls do not validate parsing they bypass.
+
+Prefer sanitized fixtures captured from the actual dependency or tool version; check that mocks preserve its input/output format while leaving the application's parsing and request construction real. If only synthetic fixtures are available, state that limit.
 
 Run focused checks on the changed behavior. Capture output to a log and save the check's exit status before displaying excerpts or running cleanup. Propagate each required failure through the enclosing command; `pipefail` alone does not stop later commands from masking it. Separate expected failing probes from checks that must pass. For packaging bugs, exercise the failing action in the affected packaged build, not just a development build or app launch. If the target environment is unavailable, state the validation limit.
 
-**Complete when:** the implementation follows the verified contracts and relevant checks have recorded outcomes, with any runtime validation gap explicit.
+**Complete when:** the implementation follows the verified contracts and relevant checks, including affected application-level integration paths, have recorded outcomes with any runtime validation gap explicit.
 
 ## 4. Report evidence
 

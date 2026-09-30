@@ -13,6 +13,8 @@ argument-hint: "[target area / module / flow] (optional: omit to scan entire pro
 
 Run autonomously and preserve correct behavior. After every action, immediately take the next action defined below. The next user-facing response after setup begins is either a setup blocker or the final report. Baselines, retained improvements, failed experiments, and completed hotspots are intermediate states.
 
+Reconcile HEAD, the index, and the working diff with the recorded baseline and owned candidate before editing, restoring, committing, or accepting measurements. External changes affecting measured code, dependencies, inputs, or the evaluator invalidate the baseline. Preserve samples as history, pause overlapping work, and bind a fresh baseline before continuing. Restore only the candidate's owned diff.
+
 A user stop or finalize request overrides the loop. Save the current candidate diff and evidence, retain only verified improvements, and revert only this run's unfinished changes. Report the run as interrupted with remaining hotspots, not saturated. Merge, push, or deploy only when authorized.
 
 ## 1. Setup
@@ -83,13 +85,13 @@ For the active hotspot:
 
 1. Reuse an existing reliable benchmark where possible. Otherwise add the smallest benchmark or `[PERF-PROBE]` needed and commit that setup separately.
 2. Record measurement files added by this run in `map.md`; existing measurement files are outside this list.
-3. Bind the concrete symbol or query, editable files, correctness command, complete benchmark command, scalar objective and direction, representative inputs, and measured noise threshold in `map.md`.
+3. Bind the baseline commit and working-diff identity, concrete symbol or query, editable files, correctness command, complete benchmark command, scalar objective and direction, representative inputs, and measured noise threshold in `map.md`.
 4. Treat evaluator and correctness files as read-only during candidate experiments. Commit harness changes separately and establish a fresh baseline before resuming candidates.
-5. Run the complete benchmark several times with warmup. Record raw samples, median metric, and median wall-clock duration.
+5. Run the complete benchmark at least three times after warmup. Record the warmup procedure, sample count, raw samples, median metric, and median wall-clock duration.
 6. Create a baseline ID and write its metric to `parts.tsv`.
 7. Set the timeout to `max(2 × median wall time, median wall time + 5 seconds)`.
 
-**Measurement is complete when:** the active hotspot has a repeatable end-to-end baseline, measured workload share, baseline ID, noise threshold, bound evaluator, and derived timeout.
+**Measurement is complete when:** the active hotspot has a repeatable end-to-end baseline tied to the recorded revision, measured workload share, baseline ID, noise threshold, bound evaluator, sample protocol, and derived timeout.
 
 ## 4. Build the Hypothesis Frontier
 
@@ -104,8 +106,8 @@ Static analysis, historical results, and pruned hypotheses guide this frontier b
 Run one pending hypothesis at a time:
 
 1. **Predict:** Record the expected metric effect and likely failure mode.
-2. **Change:** Make one small candidate diff within the bound editable files. Distinct approaches change different work, representation, ownership, batching, or execution mechanisms; parameter tweaks and cosmetic variants of one mechanism are one approach.
-3. **Check:** Run the test baseline and complete benchmark. Save output under `logs/` and inspect the metrics or last 40 lines.
+2. **Change:** Make one small candidate diff within the bound editable files and record its identity with the measurement evidence. Distinct approaches change different work, representation, ownership, batching, or execution mechanisms; parameter tweaks and cosmetic variants of one mechanism are one approach.
+3. **Check:** Run correctness checks and the complete benchmark. Capture output under `logs/` and save each check's exit status before filtering or cleanup; propagate required failures through the enclosing command. Distinguish expected failing probes from checks that must pass. Use revision-bound artifacts or isolated checkouts with separate writable outputs for comparisons; leave the active checkout and its stash untouched by baseline runs. Interleave baseline and candidate measurements with the same inputs, settings, warmup, and sample count from Bind Measurement. Keep raw samples and compare medians against measured noise before retention; a single candidate timing is insufficient.
 4. **Record and route:**
    - Tests match and improvement is at least 5% and exceeds measured noise: record numeric before/after evidence as `keep`, commit, and continue at **Re-profile**.
    - Tests match, performance is within measured noise, and the diff observably removes a branch, allocation, query, call, conversion, or repeated operation from the measured path: record `keep-simple`, commit, and continue at **Re-profile**.
@@ -140,7 +142,7 @@ Check all of the following mechanically:
 - Every `saturated` hotspot points to at least three numeric attempt rows against its final baseline using distinct approaches.
 - Each saturated hotspot's final-baseline rows show either three consecutive non-wins or eight measured approaches.
 - Pruned and `inapplicable` hypotheses contribute to neither attempt count nor saturation.
-- Every retained gain points to a commit from this run and was followed by re-profiling.
+- Every retained gain points to a commit from this run, has revision-matched baseline/candidate samples whose median comparison meets its keep gate, and was followed by re-profiling.
 - Every timeout appears in `attempts.tsv`.
 - Tests match the test baseline, no path under `.perf/` is tracked, and the source working tree contains only intentional retained files; ignored run evidence is expected outside that source-change check.
 
