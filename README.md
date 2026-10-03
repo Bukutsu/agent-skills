@@ -16,7 +16,7 @@ npx skills add anthropics/skills -g --skill docx --skill frontend-design --skill
 npx skills add cursor/plugins -g --skill bro --skill how --skill typescript-best-practices --skill why -y
 npx skills add mattpocock/skills -g --skill handoff --skill writing-for-agents -y
 npx skills add mgranberry/mermaid-diagram-skill -g --skill mermaid-diagram -y
-npx skills add Tencent/BrowserSkill -g --skill browser-skill -y
+npx skills add vercel-labs/agent-browser -g --skill agent-browser -y
 npx skills add vercel-labs/agent-skills -g --skill web-design-guidelines -y
 npx skills add tinyfish-io/tinyfish-cookbook -g --skill use-tinyfish -y
 
@@ -27,6 +27,15 @@ cp -r skills/* ~/.agents/skills/
 Check the install with `npx skills ls -g`. It should list 21 skills: 16 external and 5 local.
 
 The local skills are `audit-loop`, `docs-first`, `git-peek`, `imprint`, and `perf-loop`.
+
+Browser automation also needs the CLI and Chrome:
+
+```bash
+npm install -g agent-browser
+agent-browser install
+```
+
+Agent-browser runs headlessly by default. Use a separate persistent profile for agent logins.
 
 ## maintain
 
