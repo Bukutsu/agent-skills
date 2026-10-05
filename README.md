@@ -21,12 +21,16 @@ npx skills add vercel-labs/agent-skills -g --skill web-design-guidelines -y
 npx skills add tinyfish-io/tinyfish-cookbook -g --skill use-tinyfish -y
 
 # install local skills
-cp -r skills/* ~/.agents/skills/
+mkdir -p ~/.agents/skills
+for skill in audit-loop git-peek imprint perf-loop; do
+  cp -r "skills/$skill" ~/.agents/skills/
+done
 ```
 
-Check the install with `npx skills ls -g`. It should list 21 skills: 16 external and 5 local.
+Check the install with `npx skills ls -g`. The list above installs 20 skills: 16 external and 4 local.
 
-The local skills are `audit-loop`, `docs-first`, `git-peek`, `imprint`, and `perf-loop`.
+The active local skills are `audit-loop`, `git-peek`, `imprint`, and `perf-loop`.
+`docs-first` remains archived here but is not installed; its compact policy lives in global `AGENTS.md` in [pi-agent-config](https://github.com/Bukutsu/pi-agent-config).
 
 Browser automation also needs the CLI and Chrome:
 

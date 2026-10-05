@@ -29,7 +29,7 @@ For direct review, finish this sequence before starting the next perspective:
 1. Emit a **REVIEW START** checkpoint naming round, Git-resolved revision, scope, highest-risk path, and at least two concrete failure hypotheses.
 2. Search targeted symbols and read bounded production spans. Trace callers and adapters where the contract crosses boundaries.
 3. After the first targeted search and source read, attempt the smallest discriminating probe before expanding inspection. Prefer a standard-library probe when it exercises the real boundary. Run tools and tests from the project root unless a supported option changes it; test configuration may exclude external scratch paths. For third-party runners, inspect installed help/types and project configuration before choosing flags. After one corrected retry, use a documented alternative or record the probe blocked; do not guess further flags. Prefer malformed inputs, controlled task ordering, cancellation/error cleanup, and local service fixtures.
-4. Exercise at least one case beyond existing test assertions in each perspective. This means a new input, ordering, state transition, failure injection, or boundary condition with an assertion; rerunning or filtering unchanged tests does not count. Existing tests count only for the named assertions actually executed and inspected. A filter matching zero intended tests supplies no evidence. Without a novel case, that perspective is INCOMPLETE.
+4. Choose probes from the failure hypotheses and required coverage gaps, not a novelty quota. Reuse an existing test when its inspected assertions discriminate the named failure through real production code; otherwise extend a run-owned probe with the smallest missing input, ordering, transition, or failure injection. Record expected versus observed behavior and bypassed layers. A filter matching zero intended tests supplies no evidence. Missing discriminating evidence makes the perspective INCOMPLETE; lack of a new test does not.
 5. For custom probes, use throwing assertions or explicit failure statuses. Catch only expected application errors; keep assertions outside those catches and check the specific contract outcome. Assert the expected result and target execution unconditionally; do not hide checks behind conditionals or increment counts only when a condition happens to hold. If multiple outcomes are valid, name, assert, and record each. Add a valid control when malformed fixtures could explain the result. Read diagnostics even when exit is zero; a printed PASS label is not a result.
 6. Reconcile every planned probe. A failure stays pending until the production contract establishes a reachable defect or the fixture is shown to be wrong. Correct fixtures with a recorded explanation; a different passing case leaves the original hypothesis unresolved.
 7. Emit or save the perspective report below before proceeding. Direct reviews and probes are sequential: finish and report the current perspective before inspecting or probing the next. Parallelize only through independent delegated reviewers. Queue findings; keep this review read-only until all perspective reports are collected.
@@ -38,7 +38,7 @@ For direct review, finish this sequence before starting the next perspective:
 REVIEW RESULT: <perspective>
 Round / HEAD / diff identity: <full HEAD plus staged and unstaged patch hashes>
 Scope: <subsystems examined, highest-risk path, unexamined boundaries>
-Coverage delta: <new paths or deeper failure cases, receipts, remaining required coverage>
+Coverage: <contracts checked, reused or extended probes with rationale, receipts, remaining required coverage>
 Required path evidence: <each mapped high-risk path -> source receipt -> probe receipt, or PENDING>
 Hypotheses:
 - <failure> -> CONFIRMED | REFUTED | UNRESOLVED
@@ -56,7 +56,7 @@ Classify each perspective: **NOT CLEAN** requires a confirmed application defect
 
 **Blocked:** if a required probe, tool, or runtime is unavailable after one documented correction, record its error, owner, and missing result as pending; stop that probe and continue only independent safe work. For a blocked scoped run, record the unresolved hypothesis, actual blocker, evidence gathered, and INCOMPLETE verdict; do not start unrelated broad discovery. If remaining required coverage is blocked, exit promptly rather than retrying or leaving a summary-less turn.
 
-**Done:** all locked perspectives have reports at one revision, every hypothesis has production-path evidence, every applicable probe is executed, and scope gaps are explicit. Every mapped high-risk path must have its own source and probe receipts; a listed risk without a probe remains pending regardless of nearby passing tests. Minimum probe counts are a floor; cover mapped high-risk paths rather than stopping at the count.
+**Done:** all locked perspectives have reports at one revision, every hypothesis has production-path evidence, every applicable probe is executed, and scope gaps are explicit. Every mapped high-risk path must have its own source and probe receipts; a listed risk without a probe remains pending regardless of nearby passing tests. One probe may cover multiple mapped paths when its assertions independently check each contract; map those receipts explicitly rather than duplicating the probe.
 
 ## Probe and evidence safety
 
@@ -70,7 +70,7 @@ Classify each perspective: **NOT CLEAN** requires a confirmed application defect
 
 Independently verify each candidate's violated contract and reachable failing path. Verify external library/runtime claims against authoritative documentation or matching source. Reject faulty probes with source evidence rather than changing expectations to force green.
 
-Order confirmed defects by severity. Make surgical root-cause fixes inside existing intent. Show the same reproducer fails for the intended reason before the fix and passes afterward; retain regression tests when practical. Run required compile, type, lint, and test checks, stating validation limits. Commit each verified fix separately when authorized; explicitly stage owned files.
+Order confirmed defects by severity. Make surgical root-cause fixes inside existing intent. Show the same reproducer fails for the intended reason before the fix and passes afterward. Before retaining a permanent test, name its protected behavior, credible regression, and gap in existing protection. Prefer extending the owning test; another layer needs a distinct transport, lifecycle, or other risk. Use independent expectations and real production behavior, with mocks outside the behavior under test. Keep probes in the evidence root unless they earn permanent retention; avoid production seams used only by tests. Preserve existing assertions unless the contract changed or source evidence establishes a faulty test, and explain that change. Run focused checks while iterating and required compile, type, lint, and test checks before handoff, stating limits. Commit each verified fix separately when authorized; explicitly stage owned files.
 
 For each fix, record its blast radius: changed contracts, direct callers, and indirect dependencies through shared state, serialized formats, adapters, lifecycle timing, or platform-specific behavior. Trace beyond symbol matches until affected consumers are accounted for. State the invariant that keeps each affected contract safe and probe real production code across the relevant boundary; an isolated helper test covers only that helper. Record bypassed layers and blocked checks. Blast-radius validation informs the next review; it does not replace fresh coverage.
 
@@ -82,16 +82,16 @@ Reconcile HEAD, index, and worktree before edits, staging, or evidence acceptanc
 
 After any fix, start a new round at the observed final revision and repeat Step 2 for every perspective, including a separate current-round report for each. Read production paths and relevant test assertions afresh. In affected scopes, test incomplete-fix/regression hypotheses and the recorded blast radius.
 
-Each later round must also advance coverage in every perspective: choose its highest-risk unexamined or insufficiently tested contract from the ledger, then probe a new path or a deeper failure mode (malformed inputs, cancellation, concurrency, partial failure, cleanup, or upgrades). Record why that target outranks remaining candidates. When no required unexamined path remains, deepen the highest-risk reviewed path. Easy peripheral samples and existing-test reruns alone do not establish progress. Prior reports guide navigation; they do not supply current evidence.
+Each later round prioritizes changed contracts, blast-radius risks, and unresolved required coverage. Reuse discriminating fixtures and tests, reread their production paths and assertions, and rerun them at the final revision. Add or deepen a probe only for a named evidence gap; when required coverage is complete, further novelty is not an exit requirement. Prior reports guide navigation but do not supply current-round results.
 
-If the first round finds nothing, run a depth probe on the highest-complexity path in each perspective before accepting its result. Tests, fix verification, time spent, and report headings do not replace this review.
+Before accepting a no-finding round, check that each perspective's highest-risk path has a discriminating failure-case receipt, not merely a happy-path run. Supply missing evidence with the smallest targeted probe. Tests, fix verification, time spent, and report headings do not replace production-path review.
 
 Recover the ledger after compaction or resuming; reconcile revision and diff. Missing results remain pending. Before exit, verify:
 - All locked reports match the same full HEAD and staged/unstaged diff hashes.
 - Source receipts point to inspected production mechanisms, not merely tests or unrelated lines.
 - All planned probes are reconciled, custom runner controls detect failure, and required checks pass.
 - After fixes, accepted reads and probes postdate the last change.
-- Each perspective has a separate current-round report with new/deeper coverage receipts; a summary ledger label cannot substitute for it.
+- Each perspective has a separate current-round report with discriminating coverage receipts and reasons for probe reuse or extension; a summary ledger label cannot substitute for it.
 - Reconcile each mapped high-risk path against its report's source and probe receipts. A path named as highest risk but lacking a probe is pending; unexamined, inspected-only, or blocked required coverage prevents CLEAN.
 - Findings, unresolved hypotheses, and blast-radius checks are reconciled. Round count or a round with zero findings is not an exit criterion.
 
