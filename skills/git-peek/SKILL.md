@@ -1,15 +1,34 @@
 ---
 name: git-peek
 description: >-
-  Inspect external Git repositories when given a repository URL or owner/repo,
-  or asked about remote source structure or symbols.
+  Verify external contracts from matching-version source or authoritative docs
+  before implementation. Use whenever implementing, configuring, or fixing code
+  that depends on an external library, SDK, API, service, framework, CLI, build
+  tool, or system interface, even when the user does not ask for research.
+  Also use for repository URLs or owner/repo, dependency tracing, and supported
+  usage or prerequisite questions. Reuse this workflow while it remains in context.
 ---
 
 # Git Peek
 
-Reuse shallow clones for source inspection. Keep cached repositories read-only except for authorized refreshes.
+Use the smallest authoritative lookup that resolves the question. For open-source implementation questions, prefer matching-version source and examples. Keep cached repositories read-only except for authorized refreshes.
 
-## 1. Resolve source and cache
+Read this workflow once while it remains in context. Reuse verified evidence while the version and contract still apply; reload after relevant context loss or a skill change.
+
+## 1. Resolve the contract and evidence
+
+Identify the behavior or interface needed and the version in use from lockfiles, installed metadata, or tool version output. Check relevant prerequisites before executing. Internal code questions start with the existing implementation and conventions.
+
+Choose the lightest sufficient source:
+- Installed source, types, headers, `--help`, or man pages when they answer the question directly.
+- A matching upstream release or commit for deeper open-source tracing. Use the cache workflow below; default-branch behavior is not evidence for a different installed version.
+- Official versioned documentation or specifications for closed-source services, unsupported/internal API questions, or gaps in source evidence.
+
+Documentation establishes supported guarantees; implementation shows actual behavior. Resolve discrepancies explicitly and keep private implementation details out of integrations unless that dependency is intentional and authorized. A source trace need not be followed by redundant documentation reading when the contract is already established.
+
+**Complete when:** target version, question, evidence source, and prerequisites are identified, or missing information is reported. If no repository is needed, skip to inspection.
+
+## 2. Resolve source and cache
 
 Resolve the clone URL, host, owner, repository, and any requested branch, tag, or commit. Expand owner/repo to a clone URL for the intended host. Include the host in the cache key to separate identically named repositories.
 
@@ -23,7 +42,7 @@ Set the cache path to `<cache-root>/<host>/<owner>/<repo>`. Treat URL components
 
 **Complete when:** source, requested revision, permitted cache path, and any required ignore rule are resolved.
 
-## 2. Reuse or clone
+## 3. Reuse or clone
 
 - Cache hit: verify it is a Git repository and its origin matches the requested source. Use its current revision for ordinary inspection.
 - Cache miss: create its parent directory and run `git clone --depth 1 <clone-url> <cache-path>` with quoted, resolved arguments.
@@ -36,13 +55,15 @@ For a requested branch, tag, or commit missing from the shallow clone, fetch tha
 
 **Blocked:** report retrieval failures and pause claims that require unavailable source.
 
-## 3. Inspect and answer
+## 4. Inspect and apply
 
-Search relevant symbols and read bounded slices around definitions and callers in the selected revision. Exclude cached foreign source from searches of the user's own project.
+Trace the relevant public entry point into its implementation and callers using targeted searches and bounded reads. Consult examples where useful. Establish the inputs, outputs, errors, and constraints needed for the task. Exclude cached foreign source from searches of the user's own project.
 
-Answer with repository paths, line numbers, and the inspected commit. Distinguish code-backed facts from inference. If the target is absent, cite the search scope and limits instead of inventing a location.
+When implementation is authorized, use supported entry points and the contracts established above. Follow configuration to actual calls or payloads when relevant. Keep scratch work outside cached source and the active checkout. Inspection alone does not authorize edits, installs, or live side effects.
 
-**Complete when:** source claims have traceable evidence and missing or stale evidence is explicit.
+Cite repository paths, line numbers, and the inspected commit, or the authoritative URL/installed definition and version. Distinguish supported contracts, observed implementation, and inference. If the target is absent or evidence unavailable, report the search scope and limits rather than guessing.
+
+**Complete when:** the requested answer or implementation follows the inspected contract, with relevant uncertainty and limits explicit.
 
 ## Retention
 
