@@ -1,19 +1,19 @@
 ---
 name: git-peek
 description: >-
-  Verify external contracts from matching-version source or authoritative docs
-  before implementation. Use whenever implementing, configuring, or fixing code
-  that depends on an external library, SDK, API, service, framework, CLI, build
-  tool, or system interface, even when the user does not ask for research.
-  Also use for repository URLs or owner/repo, dependency tracing, and supported
-  usage or prerequisite questions. Reuse this workflow while it remains in context.
+  Resolve unfamiliar or uncertain external behavior from matching-version source
+  or authoritative docs. Use for explicit repository inspection (Git URL or
+  owner/repo), dependency internals, or an unresolved API, CLI, or framework
+  contract needed for the task. Routine coding and familiar tool use can proceed
+  from established project patterns and evidence. Reuse an already-loaded workflow;
+  a new task or external symbol alone does not require another read.
 ---
 
 # Git Peek
 
 Use the smallest authoritative lookup that resolves the question. For open-source implementation questions, prefer matching-version source and examples. Keep cached repositories read-only except for authorized refreshes.
 
-Read this workflow once while it remains in context. Reuse verified evidence while the version and contract still apply; reload after relevant context loss or a skill change.
+Load this workflow for a specific unresolved question or repository inspection. While it remains in context, apply it directly across tasks; new symbols or documentation needs call for new evidence, not another workflow read. Reload only after its contents are lost or the skill changes. Reuse verified evidence while the version and contract still apply.
 
 ## 1. Resolve the contract and evidence
 
