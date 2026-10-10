@@ -17,6 +17,7 @@ npx skills add cursor/plugins -g --skill bro --skill how --skill typescript-best
 npx skills add mattpocock/skills -g --skill handoff --skill writing-for-agents -y
 npx skills add mgranberry/mermaid-diagram-skill -g --skill mermaid-diagram -y
 npx skills add vercel-labs/agent-browser -g --skill agent-browser -y
+npx skills add vercel-labs/skills -g --skill find-skills -y
 npx skills add vercel-labs/agent-skills -g --skill web-design-guidelines -y
 npx skills add tinyfish-io/tinyfish-cookbook -g --skill use-tinyfish -y
 
@@ -27,7 +28,7 @@ for skill in git-peek imprint; do
 done
 ```
 
-Check the install with `npx skills ls -g`. The list above installs 18 skills: 16 external and 2 local.
+Check the install with `npx skills ls -g`. The list above installs 19 skills: 17 external and 2 local.
 
 The local skills are `git-peek` and `imprint`.
 `git-peek` verifies external contracts before implementation using matching-version source or authoritative documentation.
