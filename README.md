@@ -20,14 +20,14 @@ npx skills add tinyfish-io/tinyfish-cookbook -g --skill use-tinyfish -y
 
 # install local skills
 mkdir -p ~/.agents/skills
-for skill in git-peek imprint; do
+for skill in audit-loop git-peek imprint perf-loop; do
   cp -r "skills/$skill" ~/.agents/skills/
 done
 ```
 
-Check the install with `npx skills ls -g`. The list above installs 14 skills: 12 external and 2 local.
+Check the install with `npx skills ls -g`. The list above installs 16 skills: 12 external and 4 local.
 
-The local skills are `git-peek` and `imprint`.
+The local skills are `audit-loop`, `git-peek`, `imprint`, and `perf-loop`.
 `git-peek` verifies external contracts before implementation using matching-version source or authoritative documentation.
 
 Browser automation also needs the CLI and Chrome:
