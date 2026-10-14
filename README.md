@@ -18,10 +18,11 @@ npx skills add vercel-labs/agent-browser -g --skill agent-browser -y
 npx skills add vercel-labs/skills -g --skill find-skills -y
 npx skills add tinyfish-io/tinyfish-cookbook -g --skill use-tinyfish -y
 
-# install local skills
-mkdir -p ~/.agents/skills
+# link local skills so repo edits stay in sync
+mkdir -p ~/.agents/skills ~/.claude/skills
 for skill in audit-loop git-peek imprint perf-loop; do
-  cp -r "skills/$skill" ~/.agents/skills/
+  ln -s "$PWD/skills/$skill" "$HOME/.agents/skills/$skill"
+  ln -s "$HOME/.agents/skills/$skill" "$HOME/.claude/skills/$skill"
 done
 ```
 
