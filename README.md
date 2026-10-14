@@ -11,7 +11,7 @@ git clone https://github.com/Bukutsu/agent-skills
 cd agent-skills
 
 # install each source once
-npx skills add anthropics/skills -g --skill docx --skill pdf --skill pptx --skill xlsx -y
+npx skills add anthropics/skills -g --skill docx --skill frontend-design --skill pdf --skill pptx --skill xlsx -y
 npx skills add cursor/plugins -g --skill bro --skill how --skill typescript-best-practices --skill why -y
 npx skills add mattpocock/skills -g --skill writing-for-agents -y
 npx skills add vercel-labs/agent-browser -g --skill agent-browser -y
@@ -25,7 +25,7 @@ for skill in audit-loop git-peek imprint perf-loop; do
 done
 ```
 
-Check the install with `npx skills ls -g`. The list above installs 16 skills: 12 external and 4 local.
+Check the install with `npx skills ls -g`. The list above installs 17 skills: 13 external and 4 local.
 
 The local skills are `audit-loop`, `git-peek`, `imprint`, and `perf-loop`.
 `git-peek` verifies external contracts before implementation using matching-version source or authoritative documentation.
