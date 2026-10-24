@@ -30,6 +30,7 @@ Check the install with `npx skills ls -g`. The list above installs 18 skills: 13
 
 The local skills are `agent-ready`, `audit-loop`, `git-peek`, `imprint`, and `perf-loop`.
 `git-peek` verifies external contracts before implementation using matching-version source or authoritative documentation.
+`audit-loop`'s reviewer brief adapts [Heym's adversarial review prompt](https://heym.run/blog/ai-code-review), [Anthropic's code-reviewer agent](https://github.com/anthropics/claude-code/blob/main/plugins/pr-review-toolkit/agents/code-reviewer.md), Google's [code review guide](https://google.github.io/eng-practices/review/reviewer/looking-for.html), and [Linus Torvalds on good taste](https://www.ted.com/talks/linus_torvalds_the_mind_behind_linux).
 
 Browser automation also needs the CLI and Chrome:
 

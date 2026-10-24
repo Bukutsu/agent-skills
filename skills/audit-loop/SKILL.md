@@ -1,100 +1,89 @@
 ---
 name: audit-loop
 description: >-
-  Audit and fix a repository through independent, project-specific perspectives.
-  Use for repo-wide quality sweeps and repeated audits until evidence supports a
-  clean round. Passing tests alone do not establish CLEAN.
+  Repeated read-only code audits of a repository or scope, looped until no new
+  findings. Use for audit-until-clean requests and repo-wide quality sweeps.
 ---
 
-# Audit Loop
+# Audit loop
 
-Audit by trying to disprove the code's contracts. Continue autonomously through review, verified fixes, and fresh review until the exit gate passes or a genuine blocker or user interruption stops the run. Preserve existing intent and unrelated work. A read-only request limits the run to investigation and reports.
+Audit the requested scope in rounds until the stop rule passes, then report the findings and ask whether to address them. The rounds are read-only: reviewers inspect code and run isolated probes. Code changes start only in Step 5, after the user says yes.
 
-## 1. Orient and establish a baseline
+The parent runs the whole loop in one active turn. A finished reviewer report is input for the next step: collect it, reconcile it, and start the next round straight away. End the turn only when the stop rule passes, the user interrupts, or a blocker leaves no safe work.
 
-- Resolve the repository root and full HEAD through Git. Record index and working-diff identity; preserve concurrent changes.
-- Read manifests and declared check commands. Verify the active toolchain and documented prerequisites before running them. Missing prerequisites block dependent checks; request setup permission rather than installing automatically.
-- Map major subsystems and lock independent perspectives with explicit boundaries. For each, decompose the requested scope into required production paths/contracts; mark each required, excluded with reason, or pending. Name the highest-risk paths and platform/runtime limits. A runtime limit may exclude that layer, not adjacent locally testable code. Record the complete requested perspective set at REVIEW START; never silently shrink it. A requested perspective without a report remains pending and makes the overall verdict INCOMPLETE.
-- Create a run-owned evidence root outside the repository for the ledger, fixtures, source probes, build outputs, reports, raw logs, and exit statuses. Put temporary files under unique children; avoid fixed `/tmp` and pre-existing scratch paths. Record revision, scopes, hypotheses, probe owners, executed results, pending items, and findings. Track coverage by high-risk contract/path: unexamined, inspected only, probed (with receipt and limits), or blocked. Define required coverage from repository risks and the requested scope; any later exclusion needs a reason, not merely passing checks elsewhere. Conversation checkpoints are sufficient when safe writable storage is unavailable.
-- Run baseline checks, retaining full logs and exit statuses. Baseline passes establish readiness, not audit coverage.
+## Inputs
 
-**Done:** baseline results and all locked scopes are recorded. A failed baseline is a finding to investigate or an explicit blocker, never CLEAN.
+- `scope` (optional): paths, subsystem, behavior, or concern. Default: the whole repository. Trace callers and dependencies only as far as an in-scope contract needs, and list unrelated discoveries separately.
+- `stop` (optional): the user's stop rule, such as a round limit, a time budget, or one quiet round. Default: stop when the coverage map has no unprobed entry and the last two rounds were quiet, or when the map saturates. Any round that is not quiet resets the count.
 
-## 2. Review one perspective at a time
+Accept both in plain language or as `scope=...` and `stop=...`. Ask before starting when the scope is ambiguous or the stop rule is unmeasurable. The stop rule and round count stay with the parent.
 
-When a reviewer tool is available, delegate independent scopes and collect full reports. For delegation, interruptions, tool failures, malformed mocks, runtime symptoms, pre-fix comparisons, or persisted-state upgrades, read [recovery.md](references/recovery.md) before handling that branch. The parent owns edits and commits.
+## Terms
 
-For direct review, finish this sequence before starting the next perspective:
+- **Round**: one report from every perspective at the same revision, then reconciliation.
+- **Finding**: a reported problem with status confirmed, unresolved, or rejected.
+- **Coverage map**: the required high-risk paths, contracts, and failure classes for each perspective, each marked unprobed, probed, excluded with a reason, or blocked. It grows during the audit.
+- **Fresh ground**: map entries a round probes for failure that no earlier round probed.
+- **Quiet round**: a complete round that covers fresh ground, adds no new Medium-or-higher finding, and leaves no finding unresolved. Low findings are recorded and reported without breaking quiet.
+- **Saturated**: every entry is probed or excluded, and in one round no perspective could add and probe a new entry.
+- **Ledger**: the parent's record of scope, stop rule, revision, coverage map, reviewer IDs, reports, and findings. Keep it in conversation checkpoints, with bulky logs in a unique run-owned directory outside the repository.
 
-1. Emit a **REVIEW START** checkpoint naming round, Git-resolved revision, scope, highest-risk path, and at least two concrete failure hypotheses.
-2. Search targeted symbols and read bounded production spans. Trace callers and adapters where the contract crosses boundaries.
-3. After the first targeted search and source read, attempt the smallest discriminating probe before expanding inspection. Prefer a standard-library probe when it exercises the real boundary. Run tools and tests from the project root unless a supported option changes it; test configuration may exclude external scratch paths. For third-party runners, inspect installed help/types and project configuration before choosing flags. After one corrected retry, use a documented alternative or record the probe blocked; do not guess further flags. Prefer malformed inputs, controlled task ordering, cancellation/error cleanup, and local service fixtures.
-4. Choose probes from the failure hypotheses and required coverage gaps, not a novelty quota. Reuse an existing test when its inspected assertions discriminate the named failure through real production code; otherwise extend a run-owned probe with the smallest missing input, ordering, transition, or failure injection. Record expected versus observed behavior and bypassed layers. A filter matching zero intended tests supplies no evidence. Missing discriminating evidence makes the perspective INCOMPLETE; lack of a new test does not.
-5. For custom probes, use throwing assertions or explicit failure statuses. Catch only expected application errors; keep assertions outside those catches and check the specific contract outcome. Assert the expected result and target execution unconditionally; do not hide checks behind conditionals or increment counts only when a condition happens to hold. If multiple outcomes are valid, name, assert, and record each. Add a valid control when malformed fixtures could explain the result. Read diagnostics even when exit is zero; a printed PASS label is not a result.
-6. Reconcile every planned probe. A failure stays pending until the production contract establishes a reachable defect or the fixture is shown to be wrong. Correct fixtures with a recorded explanation; a different passing case leaves the original hypothesis unresolved.
-7. Emit or save the perspective report below before proceeding. Direct reviews and probes are sequential: finish and report the current perspective before inspecting or probing the next. Parallelize only through independent delegated reviewers. Queue findings; keep this review read-only until all perspective reports are collected.
+Read [recovery.md](references/recovery.md) when a reviewer or tool fails, the user interrupts, code changes during the audit, or the user offers runtime logs.
 
-```text
-REVIEW RESULT: <perspective>
-Round / HEAD / diff identity: <full HEAD plus staged and unstaged patch hashes>
-Scope: <subsystems examined, highest-risk path, unexamined boundaries>
-Coverage: <contracts checked, reused or extended probes with rationale, receipts, remaining required coverage>
-Required path evidence: <each mapped high-risk path -> source receipt -> probe receipt, or PENDING>
-Hypotheses:
-- <failure> -> CONFIRMED | REFUTED | UNRESOLVED
-  Source receipt: <source-read tool result, exact production file:lines, mechanism>
-  Probe receipt: <command/fixture, owner, tool-result/log path, expected vs observed>
-  Limits: <mocked or bypassed layers, missing evidence>
-Planned probes: <executed, pending, or withdrawn with code proof>
-Findings: <severity, violated contract, reachable failing path, proposed fix>
-Optional improvements: <non-defects, separate from findings>
+## 1. Baseline
 
-VERDICT: NOT CLEAN | INCOMPLETE | CLEAN
-```
+1. Read [reviewer.md](references/reviewer.md). It holds the review standard, probe rules, and report format that every round uses, whether you review directly or brief reviewers.
+2. Record the repository root, full HEAD, staged and unstaged diff identities, and relevant untracked files.
+3. Read manifests, declared checks, and documented prerequisites. Ask before installing missing setup. Run applicable baseline checks and keep commands, exit statuses, and logs. Passing checks show readiness, not coverage.
+4. Split the scope into project-specific perspectives and build the coverage map: each perspective's high-risk paths, contracts, and failure classes, all marked unprobed. A runtime limit excludes only the unavailable layer.
+5. Start the ledger.
 
-Classify each perspective: **NOT CLEAN** requires a confirmed application defect with a reachable failing path. **INCOMPLETE** means unresolved hypotheses, missing receipts, pending probes, or blocked required checks, with no confirmed defect. **CLEAN** requires every applicable hypothesis resolved against inspected production code, all planned probes evidenced, and no findings or required coverage gaps. Keep optional improvements outside findings and verdicts.
+**Done:** scope, stop rule, baseline results, perspectives, coverage map, and ledger are recorded. A failing baseline is a finding or a blocker.
 
-**Blocked:** if a required probe, tool, or runtime is unavailable after one documented correction, record its error, owner, and missing result as pending; stop that probe and continue only independent safe work. For a blocked scoped run, record the unresolved hypothesis, actual blocker, evidence gathered, and INCOMPLETE verdict; do not start unrelated broad discovery. If remaining required coverage is blocked, exit promptly rather than retrying or leaving a summary-less turn.
+## 2. Run a round
 
-**Done:** all locked perspectives have reports at one revision, every hypothesis has production-path evidence, every applicable probe is executed, and scope gaps are explicit. Every mapped high-risk path must have its own source and probe receipts; a listed risk without a probe remains pending regardless of nearby passing tests. One probe may cover multiple mapped paths when its assertions independently check each contract; map those receipts explicitly rather than duplicating the probe.
+Review every perspective at the same recorded revision.
 
-## Probe and evidence safety
+- **Delegated**, only when the user explicitly asked for reviewers: create one reviewer per perspective once, using the initial prompt in `reviewer.md`, and keep its ID. Every later round resumes that same reviewer with the continuation prompt. The first round is **blind**; later rounds are **steered**, and the ledger records which. Wait for each full report; a completion notice is not a report.
+- **Direct**: review perspectives one at a time in the current thread, following the initial prompt yourself and finishing each report before starting the next.
 
-- Use permitted storage outside the repository by default. Repository-local scratch requires both no tracked files (`git ls-files`) and ignored paths (`git check-ignore`) before writing, staging, and exit. Choose another location if either check fails; preserve shared ignore rules.
-- Resolve writable paths before execution: generated metadata, build outputs, caches, and application state. Shared or symlinked artifacts can damage user builds even when Git stays clean.
-- Verify each runner once with an uncaught deliberate failure. Invoke it without wrappers that mask failure and record its actual nonzero tool status. Capture command status before filtering or cleanup, and propagate required failures through the enclosing command; a printed status marker under exit 0 is not a receipt.
-- Preserve compact ledgers, reports, fixtures, raw logs, and exit statuses through handoff. Keep them outside disposable build directories. After the final report, remove run-owned evidence when no longer needed unless the user requests retention; preserve project-owned and unrelated data. Bulky disposable outputs may be removed after capturing results.
-- Use local fixtures rather than production or hardware side effects. Live or destructive checks require authorization. Resource exhaustion or unavailable runtimes leave required probes pending; after one supported recovery attempt, record the blocker and continue only independent safe work.
+**Done:** every perspective has a report at the recorded revision, with source and failure-case probe evidence for each map entry it claims, or an explicit gap.
 
-## 3. Verify and fix confirmed defects
+## 3. Reconcile
 
-Independently verify each candidate's violated contract and reachable failing path. Verify external library/runtime claims against authoritative documentation or matching source. Reject faulty probes with source evidence rather than changing expectations to force green.
+Verify each reported finding yourself: the violated contract and reachable failing path for a defect, or the demonstrated maintenance hazard for structural debt. Use the probe rules in `reviewer.md` for your own checks. Preferences that remove no case, path, or duplication are optional improvements.
 
-Order confirmed defects by severity. Make surgical root-cause fixes inside existing intent. Show the same reproducer fails for the intended reason before the fix and passes afterward. Before retaining a permanent test, name its protected behavior, credible regression, and gap in existing protection. Prefer extending the owning test; another layer needs a distinct transport, lifecycle, or other risk. Use independent expectations and real production behavior, with mocks outside the behavior under test. Keep probes in the evidence root unless they earn permanent retention; avoid production seams used only by tests. Preserve existing assertions unless the contract changed or source evidence establishes a faulty test, and explain that change. Run focused checks while iterating and required compile, type, lint, and test checks before handoff, stating limits. Commit each verified fix separately when authorized; explicitly stage owned files.
+Record one ledger entry per root cause: stable ID, kind (defect or structural debt), severity, locations, impact, trigger or maintenance task, evidence, counterevidence, durable remedy, and status. A finding stays unresolved until evidence settles it; passing checks elsewhere settle nothing.
 
-For each fix, record its blast radius: changed contracts, direct callers, and indirect dependencies through shared state, serialized formats, adapters, lifecycle timing, or platform-specific behavior. Trace beyond symbol matches until affected consumers are accounted for. State the invariant that keeps each affected contract safe and probe real production code across the relevant boundary; an isolated helper test covers only that helper. Record bypassed layers and blocked checks. Blast-radius validation informs the next review; it does not replace fresh coverage.
+Match duplicates by mechanism and affected contract, not wording or line number, and attach new evidence to the existing ID. A different failure path, wider impact, or higher severity counts as new discovery once verified. Judge remedies by the complexity of the resulting design rather than patch size, and keep a justified larger root-cause fix.
 
-Reconcile HEAD, index, and worktree before edits, staging, or evidence acceptance. Changes to audited code invalidate all CLEAN verdicts. Preserve other actors' work and pause overlapping operations.
+Before accepting reports, confirm HEAD, index, worktree, and relevant untracked files still match the recorded revision. If audited code changed, keep earlier findings, revalidate the affected ones, reset the stop count, and rerun the round at the new revision.
 
-**Done:** verified fix queue drained, owned changes committed when authorized, required checks pass, and remaining gaps are explicit. In read-only mode, report confirmed findings and stop without fixes.
+Update the coverage map: mark entries probed only where the report shows failure-case probe evidence, and add the new paths and failure classes reviewers reported. Re-reading or a happy-path run leaves an entry unprobed. Record which entries were fresh ground this round.
 
-## 4. Fresh review and exit
+**Done:** every finding has a stable ID and status, the coverage map reflects this round's evidence, and all evidence matches the recorded revision.
 
-After any fix, start a new round at the observed final revision and repeat Step 2 for every perspective, including a separate current-round report for each. Read production paths and relevant test assertions afresh. In affected scopes, test incomplete-fix/regression hypotheses and the recorded blast radius.
+## 4. Continue or report
 
-Each later round prioritizes changed contracts, blast-radius risks, and unresolved required coverage. Reuse discriminating fixtures and tests, reread their production paths and assertions, and rerun them at the final revision. Add or deepen a probe only for a named evidence gap; when required coverage is complete, further novelty is not an exit requirement. Prior reports guide navigation but do not supply current-round results.
+Check the stop rule. If it has not passed, start the next round now: steer each reviewer with the continuation prompt, naming its noted findings and its unprobed map entries. When a perspective has no unprobed entry left, ask it to extend the map with new entries such as interactions between paths, combined failure classes, and boundaries shared with other perspectives, then probe them. Short progress notes between rounds are fine; the turn continues.
 
-Before accepting a no-finding round, check that each perspective's highest-risk path has a discriminating failure-case receipt, not merely a happy-path run. Supply missing evidence with the smallest targeted probe. Tests, fix verification, time spent, and report headings do not replace production-path review.
+A complete round also needs a current report for every perspective, all planned probes resolved, and required checks accounted for.
 
-Recover the ledger after compaction or resuming; reconcile revision and diff. Missing results remain pending. Before exit, verify:
-- All locked reports match the same full HEAD and staged/unstaged diff hashes.
-- Source receipts point to inspected production mechanisms, not merely tests or unrelated lines.
-- All planned probes are reconciled, custom runner controls detect failure, and required checks pass.
-- After fixes, accepted reads and probes postdate the last change.
-- Each perspective has a separate current-round report with discriminating coverage receipts and reasons for probe reuse or extension; a summary ledger label cannot substitute for it.
-- Reconcile each mapped high-risk path against its report's source and probe receipts. A path named as highest risk but lacking a probe is pending; unexamined, inspected-only, or blocked required coverage prevents CLEAN.
-- Findings, unresolved hypotheses, and blast-radius checks are reconciled. Round count or a round with zero findings is not an exit criterion.
+A blocker that survives one supported correction ends the run as INCOMPLETE once independent safe work is done. A user interruption, round limit, or time budget stops new rounds, and the report lists what is pending. Keep the evidence needed to reproduce findings and delete other run-owned scratch.
 
-Choose exactly one overall verdict: **NOT CLEAN** if any perspective has a confirmed defect; otherwise **INCOMPLETE** if any perspective, required boundary, probe, or check is incomplete; otherwise **CLEAN** if all perspectives pass their gates. An interrupted run cannot be CLEAN. CLEAN means no defects found in the exercised scope, not proof that the repository is defect-free.
+The final report contains:
+- Scope, revision, stop rule, stop reason, and rounds completed.
+- Confirmed findings, deduplicated and ordered by severity, each with ID, locations, impact, evidence, and durable remedy.
+- Unresolved findings, blockers, coverage limits, check results, and evidence locations.
+- One verdict: **NOT CLEAN** if any confirmed finding remains; otherwise **INCOMPLETE** if required evidence is missing or the run was interrupted; otherwise **CLEAN**. Meeting a user stop rule leaves these conditions unchanged.
 
-If a gate fails, continue its pending work; if genuinely blocked, emit INCOMPLETE with the exact blocker. Every exit includes a nonempty report: verdict, revision, rounds, fixes, checks, evidence location, and limitations. A final tool call alone is not a handoff.
+With confirmed findings, end with **"Do you want me to address them all?"** and wait for the answer. With only unresolved findings, ask whether to investigate the blockers. With none, say the scope is clean.
+
+## 5. Address findings on approval
+
+When the user says yes, address the confirmed findings they approved, in severity order, using each ledger entry's durable remedy.
+
+- Recheck the revision first. If the code changed since the report, revalidate the affected findings before editing.
+- Reproduce each defect with its recorded probe, make the change, and confirm the same probe now passes. For structural debt, show the duplicated path, bypassable invariant, or special case is gone.
+- Delete the obsolete code, flags, and paths the remedy names, and keep a permanent test only where it guards a named regression the existing tests miss.
+- Run the project's required checks, then report what changed per finding ID, check results, and anything left undone. Commit only when the user asks.
