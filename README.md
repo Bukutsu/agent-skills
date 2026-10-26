@@ -1,6 +1,6 @@
 # agent-skills
 
-My personal skill archive for pi, agy, Gemini, and Codex. Every agent uses the same global install list.
+My personal skill archive for pi, agy, Gemini, Codex, and Claude Code. Every agent uses the same global install list.
 
 Pi config lives in [pi-agent-config](https://github.com/Bukutsu/pi-agent-config). This repo only contains skills.
 
@@ -12,7 +12,7 @@ cd agent-skills
 
 # install each source once
 npx skills add anthropics/skills -g --skill docx --skill frontend-design --skill pdf --skill pptx --skill xlsx -y
-npx skills add cursor/plugins/pstack -g --skill bro --skill how --skill typescript-best-practices --skill why -y
+npx skills add cursor/plugins/pstack -g --skill bro --skill typescript-best-practices -y
 npx skills add mattpocock/skills -g --skill writing-for-agents -y
 npx skills add vercel-labs/agent-browser -g --skill agent-browser -y
 npx skills add vercel-labs/skills -g --skill find-skills -y
@@ -20,16 +20,22 @@ npx skills add tinyfish-io/tinyfish-cookbook -g --skill use-tinyfish -y
 
 # link local skills so repo edits stay in sync
 mkdir -p ~/.agents/skills ~/.claude/skills
-for skill in agent-ready audit-loop git-peek imprint perf-loop; do
+for skill in agent-ready audit-loop contract-research imprint perf-loop; do
   ln -s "$PWD/skills/$skill" "$HOME/.agents/skills/$skill"
   ln -s "$HOME/.agents/skills/$skill" "$HOME/.claude/skills/$skill"
 done
 ```
 
-Check the install with `npx skills ls -g`. The list above installs 18 skills: 13 external and 5 local.
+Check the install with `npx skills ls -g`. The list above installs 16 skills: 11 external and 5 local.
 
-The local skills are `agent-ready`, `audit-loop`, `git-peek`, `imprint`, and `perf-loop`.
-`git-peek` verifies external contracts before implementation using matching-version source or authoritative documentation.
+The local skills:
+
+- `agent-ready` starts the repo as a fresh agent would, then fixes what blocks it.
+- `audit-loop` runs read-only code audits in rounds until a round finds nothing new.
+- `contract-research` checks unfamiliar external behavior against matching-version source or authoritative documentation.
+- `imprint` writes prose the way you would. It builds a private voice profile from your own past agent sessions and saves it in your agent's memory or user state, outside this repo, so each person who clones it gets their own.
+- `perf-loop` profiles and optimizes speed or memory in a loop.
+
 `audit-loop`'s reviewer brief adapts [Heym's adversarial review prompt](https://heym.run/blog/ai-code-review), [Anthropic's code-reviewer agent](https://github.com/anthropics/claude-code/blob/main/plugins/pr-review-toolkit/agents/code-reviewer.md), Google's [code review guide](https://google.github.io/eng-practices/review/reviewer/looking-for.html), and [Linus Torvalds on good taste](https://www.ted.com/talks/linus_torvalds_the_mind_behind_linux).
 
 Browser automation also needs the CLI and Chrome:

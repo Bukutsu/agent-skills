@@ -1,15 +1,12 @@
 ---
-name: git-peek
+name: contract-research
 description: >-
-  Resolve unfamiliar or uncertain external behavior from matching-version source
-  or authoritative docs. Use for explicit repository inspection (Git URL or
-  owner/repo), dependency internals, or an unresolved API, CLI, or framework
-  contract needed for the task. Routine coding and familiar tool use can proceed
-  from established project patterns and evidence. Reuse an already-loaded workflow;
-  a new task or external symbol alone does not require another read.
+  Verify unfamiliar external behavior before relying on it. Use for explicit
+  repository inspection, dependency internals, or unresolved API, CLI, and
+  framework contracts. Match source or documentation to the relevant version.
 ---
 
-# Git Peek
+# Contract Research
 
 Use the smallest authoritative lookup that resolves the question. For open-source implementation questions, prefer matching-version source and examples. Keep cached repositories read-only except for authorized refreshes.
 
