@@ -99,7 +99,7 @@ Preserve supplied facts, names, numbers, dates, citations, and constraints unles
 
 Keep the requested artifact as the scope: rewriting a PR body updates that body, not a separate comment or announcement. Drafting does not authorize publishing. READMEs explain use of the project; repository descriptions, topics, and homepage settings belong to the hosting platform. Apply metadata changes there only when authorized.
 
-**Detector feedback:** treat a reported AI-detector score as information about the detector, not a revision instruction. Before rewriting again, check the detector's documented scope for this kind of text (some exclude Markdown, instructions, or technical manuals) and keep its score separate from readability, accuracy, and actual authorship. Report what you found; treat score changes as unexplained unless evidence shows a cause. Revise only passages with a Step 3 reason, never to lower a score.
+**Feedback on a result:** find the cause before rewriting again. Check whether the feedback's source, such as a tool or metric, applies to this kind of text, and keep it separate from readability and accuracy. Revise only passages with a Step 3 reason.
 
 **Complete when:** operation, destination, preservation requirements, and write authorization are clear.
 
